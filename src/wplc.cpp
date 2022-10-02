@@ -14,8 +14,8 @@
 #include <iostream>
 #include <fstream>
 #include "antlr4-runtime.h"
-// #include "WPLCLexer.h"
-// #include "WPLCParser.h"
+#include "WPLLexer.h"
+#include "WPLParser.h"
 // #include "CalcErrorHandler.h"
 // #include "SemanticVisitor.h"
 // #include "CodegenVisitor.h"
@@ -88,13 +88,14 @@ int main(int argc, const char* argv[]) {
   } else {
     input = new antlr4::ANTLRInputStream(inputString);
   }
-  WPLCLexer lexer(input);
+  WPLLexer lexer(input);
   antlr4::CommonTokenStream tokens(&lexer);
   
   // 2. Create a parser from the token stream
-  WPLCParser parser(&tokens);   
-  WPLCParser::ProgramContext* tree = NULL;
+  WPLParser parser(&tokens);   
+  WPLParser::CompilationUnitContext* tree = NULL;
 
+  std::cout << "yoo" << std::endl;
   // // 3. Parse the program and get the parse tree
   // tree = parser.program();
 
