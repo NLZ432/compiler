@@ -10,7 +10,7 @@ include (ANTLR)
 # include(Semantic)
 # include(Symbol)
 # include(Codegen)
-# include(LLVM)
+include(LLVM)
 # include(Runtime)
 
 ####################################################################
@@ -36,14 +36,14 @@ add_subdirectory(lexparse)
 add_executable(wplc wplc.cpp)
 
 # add dependencies as you need them
-# add_dependencies(wplc 
-#   parser_lib 
+add_dependencies(wplc 
+  parser_lib 
 #   sym_lib 
 #   semantic_lib
 #   utility_lib
 #   codegen_lib
 #   wpl_runtime
-#   )
+  )
 
 target_include_directories(wplc PUBLIC 
   ${ANTLR_INCLUDE} ${ANTLR_GENERATED_DIR}
@@ -57,8 +57,9 @@ target_include_directories(wplc PUBLIC
 
 target_link_libraries(wplc 
   PRIVATE
-  # ${ANTLR_RUNTIME_LIB}
-  # lexparse_lib
+  ${ANTLR_RUNTIME_LIB}
+  parser_lib
+  lexparse_lib
   # sym_lib
   # semantic_lib
   # utility_lib
