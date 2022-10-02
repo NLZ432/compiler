@@ -18,7 +18,7 @@ add_subdirectory(src bin)
 set (CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 # install(
 #   TARGETS 
-#     calculator
+#     wplc
 #   DESTINATION install
 # )
 # include(Install)
