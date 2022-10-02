@@ -7,5 +7,5 @@ set (RUNTIME_DIR ${CMAKE_SOURCE_DIR}/src/runtime)
 # the appropriate CMake files.
 #################################################
 # set (RUNTIME_SOURCES
-#   ${RUNTIME_DIR}/calculator_runtime.c
+#   ${RUNTIME_DIR}/wpl_runtime.c
 # )
