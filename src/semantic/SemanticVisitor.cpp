@@ -21,11 +21,49 @@ std::any SemanticVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext
 }
 
 std::any SemanticVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType t;
+  if (ctx->t != nullptr)
+  {
+    t = std::any_cast<SymType>(ctx->t->accept(this));
+  }
+  else
+  {
+    t = std::any_cast<SymType>(ctx->scalars[0]->accept(this));
+  }
+
+  for (unsigned long i = 1; i < ctx->scalars.size(); i++)
+  {
+    SymType subscalartype = std::any_cast<SymType>(ctx->scalars[i]->accept(this));
+    if (subscalartype != SymType::UNDEFINED && subscalartype != t)
+    {
+      std::string constant = ctx->scalars[i]->vi->c->getText();
+      errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(t) + ", got type " + Symbol::getSymTypeName(subscalartype) + " (" + constant + ")");
+    }
+  }
+
+  return t;
 }
 
 std::any SemanticVisitor::visitScalar(WPLParser::ScalarContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType t;
+  if (ctx->vi != nullptr)
+  {
+    t = std::any_cast<SymType>(ctx->vi->c->accept(this));
+  }
+  else
+  {
+    t = SymType::UNDEFINED;
+  }
+
+  std::string id = ctx->id->getText();
+  Symbol *symbol = stmgr->findSymbol(id);
+  if (symbol == nullptr) {
+    symbol = stmgr->addSymbol(id, t);
+    bindings->bind(ctx, symbol);
+  } else {
+    errors.addSemanticError(ctx->getStart(), "variable redeclaration: " + id);
+  }
+  return t;
 }
 
 std::any SemanticVisitor::visitArrayDeclaration(WPLParser::ArrayDeclarationContext *ctx) {
@@ -72,6 +110,7 @@ std::any SemanticVisitor::visitExternProcHeader(WPLParser::ExternProcHeaderConte
 std::any SemanticVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   SymType t = std::any_cast<SymType>(ctx->fh->t->accept(this));
   std::string id = ctx->fh->id->getText();
+  ctx->b->accept(this);
 
   Symbol *symbol = stmgr->findSymbol(id);
   if (symbol == nullptr) {
@@ -88,10 +127,6 @@ std::any SemanticVisitor::visitExternFuncHeader(WPLParser::ExternFuncHeaderConte
 }
 
 std::any SemanticVisitor::visitParams(WPLParser::ParamsContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
-std::any SemanticVisitor::visitBlock(WPLParser::BlockContext *ctx) {
   return SymType::UNDEFINED;
 }
 
@@ -132,7 +167,20 @@ std::any SemanticVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
 }
 
 std::any SemanticVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType t = SymType::UNDEFINED;
+  if (ctx->BOOLEAN())
+  {
+    t = SymType::BOOL;
+  }
+  else if (ctx->INTEGER())
+  {
+    t = SymType::INT;
+  }
+  else if (ctx->STRING())
+  {
+    t = SymType::STR;
+  }
+  return t;
 }
 
 std::any SemanticVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {

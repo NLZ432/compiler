@@ -36,7 +36,6 @@ class SemanticVisitor : WPLBaseVisitor {
     std::any visitFunction(WPLParser::FunctionContext *ctx) override;
     std::any visitExternFuncHeader(WPLParser::ExternFuncHeaderContext *ctx) override;
     std::any visitParams(WPLParser::ParamsContext *ctx) override;
-    std::any visitBlock(WPLParser::BlockContext *ctx) override;
     std::any visitStatement(WPLParser::StatementContext *ctx) override;
     std::any visitLoop(WPLParser::LoopContext *ctx) override;
     std::any visitConditional(WPLParser::ConditionalContext *ctx) override;

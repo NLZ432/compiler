@@ -9,7 +9,7 @@ compilationUnit   : (components+=cuComponent)+ EOF;
 cuComponent       : varDeclaration | procedure | function | externDeclaration ;
 varDeclaration    : scalarDeclaration | arrayDeclaration ;
 scalarDeclaration : (t=type| VAR) scalars+=scalar (',' scalars+=scalar)* ';' ;
-scalar            : ID varInitializer? ;
+scalar            : id=ID vi=varInitializer? ;
 arrayDeclaration  : typename=type '[' INTEGER ']' ID ';' ;       // No dynamic arrays, type not inferred
 type              : BOOL | INT | STR ;  
 varInitializer    : '<-' c=constant ;
@@ -18,7 +18,7 @@ externDeclaration : 'extern' (externProcHeader | externFuncHeader) ';';
 procedure         : procHeader block ;
 procHeader        : 'proc' id=ID '(' p=params? ')' ;
 externProcHeader  : 'proc' id=ID '(' ((params ',' ELLIPSIS) | params? | ELLIPSIS?) ')' ;
-function          : funcHeader block  ;
+function          : fh=funcHeader b=block  ;
 funcHeader        : t=type 'func' id=ID '(' p=params? ')' ;
 externFuncHeader  : t=type 'func' id=ID '(' ((params ',' ELLIPSIS) | params? | ELLIPSIS?) ')' ;
 

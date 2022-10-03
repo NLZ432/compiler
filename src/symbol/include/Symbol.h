@@ -44,6 +44,9 @@ class Symbol
         case BOOL:
           s = "BOOL";
           break;
+        case STR:
+          s = "STRING";
+          break;
         default:
           s = "UNDEFINED";
       }
