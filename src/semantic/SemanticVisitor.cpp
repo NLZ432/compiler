@@ -110,6 +110,7 @@ std::any SemanticVisitor::visitExternProcHeader(WPLParser::ExternProcHeaderConte
 std::any SemanticVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   SymType t = std::any_cast<SymType>(ctx->fh->t->accept(this));
   std::string id = ctx->fh->id->getText();
+
   ctx->b->accept(this);
 
   Symbol *symbol = stmgr->findSymbol(id);
@@ -122,15 +123,18 @@ std::any SemanticVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   return t;
 }
 
+std::any SemanticVisitor::visitBlock(WPLParser::BlockContext *ctx) {
+  stmgr->enterScope();
+  visitChildren(ctx);
+  stmgr->exitScope();
+  return SymType::UNDEFINED;
+}
+
 std::any SemanticVisitor::visitExternFuncHeader(WPLParser::ExternFuncHeaderContext *ctx) {
   return SymType::UNDEFINED;
 }
 
 std::any SemanticVisitor::visitParams(WPLParser::ParamsContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
-std::any SemanticVisitor::visitStatement(WPLParser::StatementContext *ctx) {
   return SymType::UNDEFINED;
 }
 
