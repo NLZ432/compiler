@@ -24,8 +24,6 @@ class SemanticVisitor : WPLBaseVisitor {
     }
 
     std::any visitCompilationUnit(WPLParser::CompilationUnitContext *ctx) override;
-    std::any visitCuComponent(WPLParser::CuComponentContext *ctx) override;
-    std::any visitVarDeclaration(WPLParser::VarDeclarationContext *ctx) override;
     std::any visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) override;
     std::any visitScalar(WPLParser::ScalarContext *ctx) override;
     std::any visitArrayDeclaration(WPLParser::ArrayDeclarationContext *ctx) override;
@@ -35,7 +33,6 @@ class SemanticVisitor : WPLBaseVisitor {
     std::any visitProcedure(WPLParser::ProcedureContext *ctx) override;
     std::any visitProcHeader(WPLParser::ProcHeaderContext *ctx) override;
     std::any visitExternProcHeader(WPLParser::ExternProcHeaderContext *ctx) override;
-    std::any visitFunction(WPLParser::FunctionContext *ctx) override;
     std::any visitFuncHeader(WPLParser::FuncHeaderContext *ctx) override;
     std::any visitExternFuncHeader(WPLParser::ExternFuncHeaderContext *ctx) override;
     std::any visitParams(WPLParser::ParamsContext *ctx) override;

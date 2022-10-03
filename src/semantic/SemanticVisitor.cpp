@@ -17,15 +17,6 @@ std::any SemanticVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext
   for (auto e : ctx->components) {
     e->accept(this);
   }
-  errors.addSemanticError(ctx->getStart(), "lolll");
-  return SymType::UNDEFINED;
-}
-
-std::any SemanticVisitor::visitCuComponent(WPLParser::CuComponentContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
-std::any SemanticVisitor::visitVarDeclaration(WPLParser::VarDeclarationContext *ctx) {
   return SymType::UNDEFINED;
 }
 
@@ -42,7 +33,20 @@ std::any SemanticVisitor::visitArrayDeclaration(WPLParser::ArrayDeclarationConte
 }
 
 std::any SemanticVisitor::visitType(WPLParser::TypeContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType t = SymType::UNDEFINED;
+  if (ctx->BOOL())
+  {
+    t = SymType::BOOL;
+  }
+  else if (ctx->INT())
+  {
+    t = SymType::INT;
+  }
+  else if (ctx->STR())
+  {
+    t = SymType::STR;
+  }
+  return t;
 }
 
 std::any SemanticVisitor::visitVarInitializer(WPLParser::VarInitializerContext *ctx) {
@@ -65,12 +69,18 @@ std::any SemanticVisitor::visitExternProcHeader(WPLParser::ExternProcHeaderConte
   return SymType::UNDEFINED;
 }
 
-std::any SemanticVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
 std::any SemanticVisitor::visitFuncHeader(WPLParser::FuncHeaderContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType t = std::any_cast<SymType>(ctx->t->accept(this));
+  std::string id = ctx->id->getText(); 
+
+  Symbol *symbol = stmgr->findSymbol(id);
+  if (symbol == nullptr) {
+    symbol = stmgr->addSymbol(id, t);
+    bindings->bind(ctx, symbol);
+  } else {
+    errors.addSemanticError(ctx->getStart(), "function redefinition: " + id);
+  }
+  return t;
 }
 
 std::any SemanticVisitor::visitExternFuncHeader(WPLParser::ExternFuncHeaderContext *ctx) {

@@ -13,7 +13,7 @@
 #include<sstream>
 #include "llvm/IR/Value.h"
 
-enum SymType {INT, BOOL, UNDEFINED};
+enum SymType {INT, STR, BOOL, UNDEFINED};
 
 class Symbol
 {
