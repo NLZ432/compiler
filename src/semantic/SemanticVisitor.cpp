@@ -111,7 +111,18 @@ std::any SemanticVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   SymType t = std::any_cast<SymType>(ctx->fh->t->accept(this));
   std::string id = ctx->fh->id->getText();
 
-  ctx->b->accept(this);
+  stmgr->enterScope();
+  if (ctx->fh->p)
+  {
+    for (unsigned long i = 0; i < ctx->fh->p->types.size(); i++)
+    {
+      std::string id = ctx->fh->p->ids[i]->getText();
+      SymType t = std::any_cast<SymType>(ctx->fh->p->types[i]->accept(this));
+      stmgr->addSymbol(id, t);
+    }
+  }
+  visitChildren(ctx->b);
+  stmgr->exitScope();
 
   Symbol *symbol = stmgr->findSymbol(id);
   if (symbol == nullptr) {
@@ -192,11 +203,15 @@ std::any SemanticVisitor::visitAndExpr(WPLParser::AndExprContext *ctx) {
 }
 
 std::any SemanticVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
-std::any SemanticVisitor::visitConstExpr(WPLParser::ConstExprContext *ctx) {
-  return SymType::UNDEFINED;
+  std::string id = ctx->ID()->getText();
+  Symbol *symbol = stmgr->findSymbol(id);
+  SymType t = SymType::UNDEFINED;
+  if (symbol == nullptr) {
+    errors.addSemanticError(ctx->getStart(), id + " undeclared.");
+  } else {
+    t = symbol->type;
+  } 
+  return t;
 }
 
 std::any SemanticVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
@@ -204,15 +219,27 @@ std::any SemanticVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ct
 }
 
 std::any SemanticVisitor::visitRelExpr(WPLParser::RelExprContext *ctx) {
-  return SymType::UNDEFINED;
+  return SymType::BOOL;
 }
 
 std::any SemanticVisitor::visitMultExpr(WPLParser::MultExprContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
+  SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
+  if (leftt != SymType::INT || rightt != SymType::INT)
+  {
+    errors.addSemanticError(ctx->getStart(), "cannot multiply " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
+  }
+  return SymType::INT;
 }
 
 std::any SemanticVisitor::visitAddExpr(WPLParser::AddExprContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
+  SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
+  if (leftt != SymType::INT || rightt != SymType::INT)
+  {
+    errors.addSemanticError(ctx->getStart(), "cannot add " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
+  }
+  return SymType::INT;
 }
 
 std::any SemanticVisitor::visitArrayLengthExpr(WPLParser::ArrayLengthExprContext *ctx) {
@@ -228,19 +255,61 @@ std::any SemanticVisitor::visitOrExpr(WPLParser::OrExprContext *ctx) {
 }
 
 std::any SemanticVisitor::visitEqExpr(WPLParser::EqExprContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
+  SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
+  if (leftt != rightt)
+  {
+    errors.addSemanticError(ctx->getStart(), "cannot compare " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). must be same type.");
+  }
+  return SymType::BOOL;
 }
 
 std::any SemanticVisitor::visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) {
-  return SymType::UNDEFINED;
+  std::string id = ctx->fpname->getText();
+  Symbol *symbol = stmgr->findSymbol(id);
+  SymType t = SymType::UNDEFINED;
+  if (symbol == nullptr) {
+    errors.addSemanticError(ctx->getStart(), id + " undeclared.");
+  } else {
+    t = symbol->type;
+  } 
+  // TODO verify argument types
+  return t;
 }
 
 std::any SemanticVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
   return SymType::UNDEFINED;
 }
 
-std::any SemanticVisitor::visitParenExpr(WPLParser::ParenExprContext *ctx) {
+std::any SemanticVisitor::visitLoop(WPLParser::LoopContext *ctx) {
+  SymType condt = std::any_cast<SymType>(ctx->e->accept(this));
+  if (condt != SymType::BOOL)
+  {
+    errors.addSemanticError(ctx->getStart(), "expected boolean expression for loop condition. got " + Symbol::getSymTypeName(condt));
+  }
+  
+  ctx->block()->accept(this);
   return SymType::UNDEFINED;
+}
+
+std::any SemanticVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
+  SymType condt = std::any_cast<SymType>(ctx->e->accept(this));
+  if (condt != SymType::BOOL)
+  {
+    errors.addSemanticError(ctx->getStart(), "expected boolean expression for 'if' condition. got " + Symbol::getSymTypeName(condt));
+  }
+  
+  ctx->yesblock->accept(this);
+  if (ctx->noblock)
+  {
+    ctx->noblock->accept(this);
+  }
+
+  return SymType::UNDEFINED;
+}
+
+std::any SemanticVisitor::visitParenExpr(WPLParser::ParenExprContext *ctx) {
+  return std::any_cast<SymType>(ctx->expr()->accept(this));
 }
 
 // /*
@@ -255,7 +324,7 @@ std::any SemanticVisitor::visitParenExpr(WPLParser::ParenExprContext *ctx) {
 //  * @brief IConstExpr.type = INT
 //  */
 // std::any SemanticVisitor::visitIConstExpr(CalculatorParser::IConstExprContext *ctx) {
-//   return SymType::INT;
+//   return SymType::INT
 // }
 
 // /**
