@@ -138,14 +138,6 @@ std::any SemanticVisitor::visitParams(WPLParser::ParamsContext *ctx) {
   return SymType::UNDEFINED;
 }
 
-std::any SemanticVisitor::visitLoop(WPLParser::LoopContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
-std::any SemanticVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
 std::any SemanticVisitor::visitSelect(WPLParser::SelectContext *ctx) {
   return SymType::UNDEFINED;
 }
