@@ -4,7 +4,7 @@
 grammar WPL;
 
 // Parser rules
-compilationUnit   : cuComponent+ EOF;
+compilationUnit   : (components+=cuComponent)+ EOF;
 
 cuComponent       : varDeclaration | procedure | function | externDeclaration ;
 varDeclaration    : scalarDeclaration | arrayDeclaration ;

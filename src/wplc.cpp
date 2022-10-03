@@ -1,9 +1,9 @@
 /**
  * @file wplc.cpp
- * @author gpollice
+ * @author gpollice + nllopez
  * @brief 
  * @version 0.1
- * @date 2022-09-07
+ * @date 2022-10-02
  * 
  * @copyright Copyright (c) 2022
  * 
@@ -17,7 +17,7 @@
 #include "WPLLexer.h"
 #include "WPLParser.h"
 // #include "CalcErrorHandler.h"
-// #include "SemanticVisitor.h"
+#include "SemanticVisitor.h"
 // #include "CodegenVisitor.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/CommandLine.h"
@@ -95,23 +95,22 @@ int main(int argc, const char* argv[]) {
   WPLParser parser(&tokens);   
   WPLParser::CompilationUnitContext* tree = NULL;
 
-  std::cout << "yoo" << std::endl;
   // // 3. Parse the program and get the parse tree
-  // tree = parser.program();
+  tree = parser.compilationUnit();
 
   // /******************************************************************
   //  * Perform semantic analysis and populate the symbol table
   //  * and bind nodes to Symbols using the property manager. If
   //  * there are any errors we print them out and exit.
   //  ******************************************************************/
-  // STManager *stm = new STManager();
-  // PropertyManager *pm = new PropertyManager();
-  // SemanticVisitor* sv = new SemanticVisitor(stm, pm);
-  // sv->visitProgram(tree);
-  // if (sv->hasErrors()) {
-  //   std::cerr << sv->getErrors() << std::endl;
-  //   return -1;
-  // }
+  STManager *stm = new STManager();
+  PropertyManager *pm = new PropertyManager();
+  SemanticVisitor* sv = new SemanticVisitor(stm, pm);
+  sv->visitCompilationUnit(tree);
+  if (sv->hasErrors()) {
+    std::cerr << sv->getErrors() << std::endl;
+    return -1;
+  }
 
   // // Generate the LLVM IR code
   // CodegenVisitor* cv = new CodegenVisitor(pm, "WPLC.ll");
