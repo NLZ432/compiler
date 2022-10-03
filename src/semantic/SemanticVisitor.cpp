@@ -69,9 +69,9 @@ std::any SemanticVisitor::visitExternProcHeader(WPLParser::ExternProcHeaderConte
   return SymType::UNDEFINED;
 }
 
-std::any SemanticVisitor::visitFuncHeader(WPLParser::FuncHeaderContext *ctx) {
-  SymType t = std::any_cast<SymType>(ctx->t->accept(this));
-  std::string id = ctx->id->getText(); 
+std::any SemanticVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
+  SymType t = std::any_cast<SymType>(ctx->fh->t->accept(this));
+  std::string id = ctx->fh->id->getText();
 
   Symbol *symbol = stmgr->findSymbol(id);
   if (symbol == nullptr) {
