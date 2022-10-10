@@ -8,7 +8,7 @@ compilationUnit   : (components+=cuComponent)+ EOF;
 
 cuComponent       : varDeclaration | procedure | function | externDeclaration ;
 varDeclaration    : scalarDeclaration | arrayDeclaration ;
-scalarDeclaration : (t=type| VAR) scalars+=scalar (',' scalars+=scalar)* ';' ;
+scalarDeclaration : (t=type | VAR) scalars+=scalar (',' scalars+=scalar)* ';' ;
 scalar            : id=ID vi=varInitializer? ;
 arrayDeclaration  : typename=type '[' INTEGER ']' ID ';' ;       // No dynamic arrays, type not inferred
 type              : BOOL | INT | STR ;  

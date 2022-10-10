@@ -21,14 +21,15 @@ std::any SemanticVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext
 }
 
 std::any SemanticVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
-  SymType t;
+  SymType t = std::any_cast<SymType>(ctx->scalars[0]->accept(this));
   if (ctx->t != nullptr)
   {
-    t = std::any_cast<SymType>(ctx->t->accept(this));
-  }
-  else
-  {
-    t = std::any_cast<SymType>(ctx->scalars[0]->accept(this));
+    SymType declaredtype = std::any_cast<SymType>(ctx->t->accept(this));
+    std::string constant = ctx->scalars[0]->vi->c->getText();
+    if (declaredtype != t)
+    {
+      errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(declaredtype) + ", got type " + Symbol::getSymTypeName(t) + " (" + constant + ")");
+    }
   }
 
   for (unsigned long i = 1; i < ctx->scalars.size(); i++)
@@ -170,7 +171,12 @@ std::any SemanticVisitor::visitArg(WPLParser::ArgContext *ctx) {
 }
 
 std::any SemanticVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType t = SymType::UNDEFINED;
+  if (ctx->expr()) {
+    t = std::any_cast<SymType>(ctx->expr()->accept(this));
+  }
+  // TODO: Check that this matches parent function type
+  return t;
 }
 
 std::any SemanticVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
