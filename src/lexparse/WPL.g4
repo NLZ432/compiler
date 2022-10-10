@@ -15,7 +15,7 @@ type              : BOOL | INT | STR ;
 varInitializer    : '<-' c=constant ;
 externDeclaration : 'extern' (externProcHeader | externFuncHeader) ';';
 
-procedure         : procHeader block ;
+procedure         : ph=procHeader b=block ;
 procHeader        : 'proc' id=ID '(' p=params? ')' ;
 externProcHeader  : 'proc' id=ID '(' ((params ',' ELLIPSIS) | params? | ELLIPSIS?) ')' ;
 function          : fh=funcHeader b=block  ;

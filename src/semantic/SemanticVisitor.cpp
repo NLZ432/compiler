@@ -88,23 +88,41 @@ std::any SemanticVisitor::visitType(WPLParser::TypeContext *ctx) {
   return t;
 }
 
-std::any SemanticVisitor::visitVarInitializer(WPLParser::VarInitializerContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
-std::any SemanticVisitor::visitExternDeclaration(WPLParser::ExternDeclarationContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
 std::any SemanticVisitor::visitProcedure(WPLParser::ProcedureContext *ctx) {
-  return SymType::UNDEFINED;
-}
+  std::string id = ctx->ph->id->getText();
 
-std::any SemanticVisitor::visitProcHeader(WPLParser::ProcHeaderContext *ctx) {
+  stmgr->enterScope();
+  if (ctx->ph->p)
+  {
+    for (unsigned long i = 0; i < ctx->ph->p->types.size(); i++)
+    {
+      std::string id = ctx->ph->p->ids[i]->getText();
+      SymType t = std::any_cast<SymType>(ctx->ph->p->types[i]->accept(this));
+      stmgr->addSymbol(id, t);
+    }
+  }
+  visitChildren(ctx->b);
+  stmgr->exitScope();
+
+  Symbol *symbol = stmgr->findSymbol(id);
+  if (symbol == nullptr) {
+    symbol = stmgr->addSymbol(id, SymType::UNDEFINED);
+    bindings->bind(ctx, symbol);
+  } else {
+    errors.addSemanticError(ctx->getStart(), "procedure redefinition: " + id);
+  }
   return SymType::UNDEFINED;
 }
 
 std::any SemanticVisitor::visitExternProcHeader(WPLParser::ExternProcHeaderContext *ctx) {
+  std::string id = ctx->id->getText();
+  Symbol *symbol = stmgr->findSymbol(id);
+  if (symbol == nullptr) {
+    symbol = stmgr->addSymbol(id, SymType::UNDEFINED);
+    bindings->bind(ctx, symbol);
+  } else {
+    errors.addSemanticError(ctx->getStart(), "procedure redefinition: " + id);
+  }
   return SymType::UNDEFINED;
 }
 
@@ -143,11 +161,17 @@ std::any SemanticVisitor::visitBlock(WPLParser::BlockContext *ctx) {
 }
 
 std::any SemanticVisitor::visitExternFuncHeader(WPLParser::ExternFuncHeaderContext *ctx) {
-  return SymType::UNDEFINED;
-}
+  SymType t = std::any_cast<SymType>(ctx->t->accept(this));
+  std::string id = ctx->id->getText();
 
-std::any SemanticVisitor::visitParams(WPLParser::ParamsContext *ctx) {
-  return SymType::UNDEFINED;
+  Symbol *symbol = stmgr->findSymbol(id);
+  if (symbol == nullptr) {
+    symbol = stmgr->addSymbol(id, t);
+    bindings->bind(ctx, symbol);
+  } else {
+    errors.addSemanticError(ctx->getStart(), "function redefinition: " + id);
+  }
+  return t;
 }
 
 std::any SemanticVisitor::visitSelect(WPLParser::SelectContext *ctx) {
