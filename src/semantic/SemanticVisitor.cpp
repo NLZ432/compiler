@@ -221,7 +221,35 @@ std::any SemanticVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
 }
 
 std::any SemanticVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType t = SymType::UNDEFINED;
+
+  if (ctx->targets.size() != ctx->exprs.size())
+  {
+    errors.addSemanticError(ctx->getStart(), "Expected equal number of target/expression pairs in assignment expression.");
+    return t;
+  }
+
+  for (unsigned long i = 0; i < ctx->targets.size(); i++)
+  {
+    std::string id = ctx->targets[i]->getText();
+    Symbol *symbol = stmgr->findSymbol(id);
+    if (symbol != nullptr)
+    {
+      bindings->bind(ctx, symbol);
+    }
+    else
+    {
+      errors.addSemanticError(ctx->getStart(), id + " undeclared.");
+      return t;
+    }
+
+    t = std::any_cast<SymType>(ctx->exprs[i]->accept(this));
+    if (symbol->type != t)
+    {
+      errors.addSemanticError(ctx->getStart(), id + "Type mismatch. Expected " + Symbol::getSymTypeName(symbol->type) + ", got " +  Symbol::getSymTypeName(t));
+    }
+  }
+  return t;
 }
 
 std::any SemanticVisitor::visitArrayIndex(WPLParser::ArrayIndexContext *ctx) {
