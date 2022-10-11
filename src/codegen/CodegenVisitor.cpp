@@ -36,32 +36,26 @@ std::any CodegenVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext 
 
   FunctionCallee printExpr(printf_prototype, printf_fn);
 
-  // main(arg, **string) prototype
-  FunctionType *mainFuncType = FunctionType::get(Int32Ty, {Int32Ty, Int8PtrPtrTy}, false);
-  Function *mainFunc = Function::Create(mainFuncType,     GlobalValue::ExternalLinkage,
-    "main", module);
-
-  // Create the basic block and attach it to the builder
-  BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", mainFunc);
-  builder->SetInsertPoint(bBlock);
-
   // Generate code for all expressions
   for (auto e : ctx->components) {
-
     // Generate code to output this expression
     Value *exprResult = std::any_cast<Value *>(e->accept(this));  // OK
-
-    auto et = e->getText(); // the text of the expression -- OK
-    StringRef formatRef = "Expression %s evaluates to %d\n";
-    auto gFormat = builder->CreateGlobalStringPtr(formatRef, "fmtStr");
-    StringRef exprRef = et;
-    auto exFormat = builder->CreateGlobalStringPtr(exprRef, "exprStr");
-    builder->CreateCall(printf_fn, {gFormat, exFormat, exprResult});
   }
 
-  // Generate code module trailer
-  builder->CreateRet(Int32Zero);
   return nullptr;
+}
+
+std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
+  Value *v;
+
+  std::string funcName = ctx->fh->id->getText();
+
+  FunctionType *funcType = FunctionType::get(Int32Ty, {Int32Ty, Int8PtrPtrTy}, false);
+  Function *func = Function::Create(funcType, GlobalValue::ExternalLinkage, funcName, module);
+  BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", func);
+  builder->SetInsertPoint(bBlock);
+  v = builder->CreateRet(Int32Zero);
+  return v;
 }
 
 // std::any CodegenVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
@@ -168,33 +162,6 @@ std::any CodegenVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext 
 //     errors.addSemanticError(ctx->getStart(), "procedure redefinition: " + id);
 //   }
 //   return SymType::UNDEFINED;
-// }
-
-// std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
-//   SymType t = std::any_cast<SymType>(ctx->fh->t->accept(this));
-//   std::string id = ctx->fh->id->getText();
-
-//   stmgr->enterScope();
-//   if (ctx->fh->p)
-//   {
-//     for (unsigned long i = 0; i < ctx->fh->p->types.size(); i++)
-//     {
-//       std::string id = ctx->fh->p->ids[i]->getText();
-//       SymType t = std::any_cast<SymType>(ctx->fh->p->types[i]->accept(this));
-//       stmgr->addSymbol(id, t);
-//     }
-//   }
-//   visitChildren(ctx->b);
-//   stmgr->exitScope();
-
-//   Symbol *symbol = stmgr->findSymbol(id);
-//   if (symbol == nullptr) {
-//     symbol = stmgr->addSymbol(id, t);
-//     bindings->bind(ctx, symbol);
-//   } else {
-//     errors.addSemanticError(ctx->getStart(), "function redefinition: " + id);
-//   }
-//   return t;
 // }
 
 // std::any CodegenVisitor::visitBlock(WPLParser::BlockContext *ctx) {

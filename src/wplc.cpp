@@ -119,12 +119,12 @@ int main(int argc, const char* argv[]) {
     return -1;
   }
 
-  // // Print out the module contents.
-  // llvm::Module *module = cv->getModule();
-  // std::cout << std::endl << std::endl;
-  // if (printOutput) {
-  //   cv->modPrint();
-  // }
+  // Print out the module contents.
+  llvm::Module *module = cv->getModule();
+  std::cout << std::endl << std::endl;
+  if (printOutput) {
+    cv->modPrint();
+  }
 
   // // Dump the code to an output file
   // if (!noCode) {
