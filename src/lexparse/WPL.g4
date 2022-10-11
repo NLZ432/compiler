@@ -51,8 +51,8 @@ arrayIndex        : id=ID '[' expr ']' ;
 expr              : 
                   fpname=ID '(' (args+=expr (',' args+=expr)*)? ')'       # FuncProcCallExpr
                   | arrayIndex                                            # SubscriptExpr
-                  | <assoc=right> '-' expr                                # UMinusExpr
-                  | <assoc=right> '~' expr                                # NotExpr
+                  | <assoc=right> '-' e=expr                              # UMinusExpr
+                  | <assoc=right> '~' e=expr                              # NotExpr
                   | left=expr (MUL | DIV) right=expr                      # MultExpr
                   | left=expr (PLUS | MINUS) right=expr                   # AddExpr
                   | left=expr (LESS | LEQ | GTR | GEQ) right=expr         # RelExpr

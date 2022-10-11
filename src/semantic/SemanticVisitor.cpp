@@ -289,6 +289,12 @@ std::any SemanticVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ct
 }
 
 std::any SemanticVisitor::visitRelExpr(WPLParser::RelExprContext *ctx) {
+  SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
+  SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
+  if (leftt != SymType::INT || rightt != SymType::INT)
+  {
+    errors.addSemanticError(ctx->getStart(), "cannot compare " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
+  }
   return SymType::BOOL;
 }
 
@@ -317,11 +323,22 @@ std::any SemanticVisitor::visitArrayLengthExpr(WPLParser::ArrayLengthExprContext
 }
 
 std::any SemanticVisitor::visitUMinusExpr(WPLParser::UMinusExprContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType e = std::any_cast<SymType>(ctx->e->accept(this));
+  if (e != SymType::INT)
+  {
+    errors.addSemanticError(ctx->getStart(), "expected int, got " + ctx->e->getText());
+  }
+  return SymType::INT;
 }
 
 std::any SemanticVisitor::visitOrExpr(WPLParser::OrExprContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
+  SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
+  if (leftt != SymType::BOOL || rightt != SymType::BOOL)
+  {
+    errors.addSemanticError(ctx->getStart(), "cannot OR " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). booleans only.");
+  }
+  return SymType::BOOL;
 }
 
 std::any SemanticVisitor::visitEqExpr(WPLParser::EqExprContext *ctx) {
@@ -348,7 +365,12 @@ std::any SemanticVisitor::visitFuncProcCallExpr(WPLParser::FuncProcCallExprConte
 }
 
 std::any SemanticVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType e = std::any_cast<SymType>(ctx->e->accept(this));
+  if (e != SymType::BOOL)
+  {
+    errors.addSemanticError(ctx->getStart(), "expected boolean, got " + ctx->e->getText());
+  }
+  return SymType::BOOL;
 }
 
 std::any SemanticVisitor::visitLoop(WPLParser::LoopContext *ctx) {
