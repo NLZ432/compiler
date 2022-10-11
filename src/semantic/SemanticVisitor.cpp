@@ -22,7 +22,7 @@ std::any SemanticVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext
 
 std::any SemanticVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
   SymType t = std::any_cast<SymType>(ctx->scalars[0]->accept(this));
-  if (ctx->t != nullptr)
+  if (ctx->t != nullptr && ctx->scalars[0]->vi != nullptr)
   {
     SymType declaredtype = std::any_cast<SymType>(ctx->t->accept(this));
     std::string constant = ctx->scalars[0]->vi->c->getText();
@@ -35,7 +35,7 @@ std::any SemanticVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationCon
   for (unsigned long i = 1; i < ctx->scalars.size(); i++)
   {
     SymType subscalartype = std::any_cast<SymType>(ctx->scalars[i]->accept(this));
-    if (subscalartype != SymType::UNDEFINED && subscalartype != t)
+    if (subscalartype != SymType::UNDEFINED && subscalartype != t && ctx->scalars[i]->vi != nullptr)
     {
       std::string constant = ctx->scalars[i]->vi->c->getText();
       errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(t) + ", got type " + Symbol::getSymTypeName(subscalartype) + " (" + constant + ")");
@@ -244,7 +244,13 @@ std::any SemanticVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
     }
 
     t = std::any_cast<SymType>(ctx->exprs[i]->accept(this));
-    if (symbol->type != t)
+
+    if (symbol->type == SymType::UNDEFINED)
+    {
+      symbol->type = t;
+    }
+
+    if (symbol->type != SymType::UNDEFINED && symbol->type != t)
     {
       errors.addSemanticError(ctx->getStart(), id + "Type mismatch. Expected " + Symbol::getSymTypeName(symbol->type) + ", got " +  Symbol::getSymTypeName(t));
     }
@@ -257,7 +263,13 @@ std::any SemanticVisitor::visitArrayIndex(WPLParser::ArrayIndexContext *ctx) {
 }
 
 std::any SemanticVisitor::visitAndExpr(WPLParser::AndExprContext *ctx) {
-  return SymType::UNDEFINED;
+  SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
+  SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
+  if (leftt != SymType::BOOL || rightt != SymType::BOOL)
+  {
+    errors.addSemanticError(ctx->getStart(), "cannot AND " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). booleans only.");
+  }
+  return SymType::BOOL;
 }
 
 std::any SemanticVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {

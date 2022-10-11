@@ -17,6 +17,9 @@ int func program() {
     if isPrime(current) then { nPrimes <- nPrimes + 1;}
     current <- current + 2;
   }
+  boolean b1 <- true;
+  boolean b2;
+  b2 <- false;
   return nPrimes;
 }
 
