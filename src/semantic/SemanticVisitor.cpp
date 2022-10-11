@@ -184,12 +184,18 @@ std::any SemanticVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
 }
 
 std::any SemanticVisitor::visitCall(WPLParser::CallContext *ctx) {
-  return SymType::UNDEFINED;
+    std::string id = ctx->id->getText();
+    Symbol *symbol = stmgr->findSymbol(id);
+    if (symbol == nullptr)
+    {
+      errors.addSemanticError(ctx->getStart(), id + " undeclared.");
+      return SymType::UNDEFINED;
+    }
+    // TODO make sure its actually a function
+    // TODO check args
+    return symbol->type;
 }
 
-std::any SemanticVisitor::visitArguments(WPLParser::ArgumentsContext *ctx) {
-  return SymType::UNDEFINED;
-}
 
 std::any SemanticVisitor::visitArg(WPLParser::ArgContext *ctx) {
   return SymType::UNDEFINED;

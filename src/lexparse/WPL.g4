@@ -38,7 +38,7 @@ loop              : 'while' e=expr 'do' b=block ;
 conditional       : 'if' e=expr 'then'? yesblock=block ('else' noblock=block)? ;
 select            : 'select' '{' selectAlt+ '}' ;
 selectAlt         : e=expr ':' s=statement ;  
-call              : id=ID '(' arguments? ')' ;
+call              : id=ID '(' arguments? ')' ';' ;
 arguments         : (arg (',' arg)*) ;  
 arg               : (id=ID | c=constant) ; 
 return            : 'return' expr? ';' ;

@@ -20,7 +20,7 @@ int func program() {
   boolean b1 <- true;
   boolean b2;
   b2 <- false;
-
+  isPrime(b2);
   return nPrimes;
 }
 
