@@ -174,11 +174,12 @@ std::any SemanticVisitor::visitExternFuncHeader(WPLParser::ExternFuncHeaderConte
   return t;
 }
 
-std::any SemanticVisitor::visitSelect(WPLParser::SelectContext *ctx) {
-  return SymType::UNDEFINED;
-}
-
 std::any SemanticVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
+  SymType et = std::any_cast<SymType>(ctx->e->accept(this));
+  if (et != SymType::BOOL)
+  {
+    errors.addSemanticError(ctx->getStart(), "expected a boolean expression, got " + ctx->e->getText());
+  }
   return SymType::UNDEFINED;
 }
 

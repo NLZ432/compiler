@@ -20,6 +20,7 @@ int func program() {
   boolean b1 <- true;
   boolean b2;
   b2 <- false;
+
   return nPrimes;
 }
 
