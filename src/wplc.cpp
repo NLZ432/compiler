@@ -16,9 +16,8 @@
 #include "antlr4-runtime.h"
 #include "WPLLexer.h"
 #include "WPLParser.h"
-// #include "CalcErrorHandler.h"
 #include "SemanticVisitor.h"
-// #include "CodegenVisitor.h"
+#include "CodegenVisitor.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/InitLLVM.h"
@@ -113,12 +112,12 @@ int main(int argc, const char* argv[]) {
   }
 
   // // Generate the LLVM IR code
-  // CodegenVisitor* cv = new CodegenVisitor(pm, "WPLC.ll");
-  // cv->visitProgram(tree);
-  // if (cv->hasErrors()) {
-  //   std::cerr << cv->getErrors() << std::endl;
-  //   return -1;
-  // }
+  CodegenVisitor* cv = new CodegenVisitor(pm, "WPLC.ll");
+  cv->visitCompilationUnit(tree);
+  if (cv->hasErrors()) {
+    std::cerr << cv->getErrors() << std::endl;
+    return -1;
+  }
 
   // // Print out the module contents.
   // llvm::Module *module = cv->getModule();
