@@ -72,7 +72,9 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
 
   BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", func);
   builder->SetInsertPoint(bBlock);
-  v = builder->CreateRet(Int32Zero);
+
+  ctx->b->accept(this);
+
   return v;
 }
 
@@ -230,31 +232,38 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
-//   SymType t = SymType::UNDEFINED;
-//   if (ctx->expr()) {
-//     t = std::any_cast<SymType>(ctx->expr()->accept(this));
-//   }
-//   // TODO: Check that this matches parent function type
-//   return t;
-// }
+std::any CodegenVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
+  Value* v = Int32Zero;
+  if (ctx->expr())
+  {
+    v = std::any_cast<Value *>(ctx->expr()->accept(this)); 
+  }
+  return builder->CreateRet(v);
+}
 
-// std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
-//   SymType t = SymType::UNDEFINED;
-//   if (ctx->BOOLEAN())
-//   {
-//     t = SymType::BOOL;
-//   }
-//   else if (ctx->INTEGER())
-//   {
-//     t = SymType::INT;
-//   }
-//   else if (ctx->STRING())
-//   {
-//     t = SymType::STR;
-//   }
-//   return t;
-// }
+std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
+  Value* v = Int32Zero;
+  if (ctx->BOOLEAN())
+  {
+    if (ctx->getText() == "true")
+    {
+      v = builder->getInt32(1);
+    }
+    else
+    {
+      v = builder->getInt32(0);
+    }
+  }
+  else if (ctx->INTEGER())
+  {
+    v = builder->getInt32(0); // TODO: fix
+  }
+  else if (ctx->STRING())
+  {
+    v = builder->getInt32(0); // TODO: fix
+  }
+  return v;
+}
 
 // std::any CodegenVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
 //   SymType t = SymType::UNDEFINED;

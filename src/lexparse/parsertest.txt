@@ -1,26 +1,12 @@
 (*
  * We know that n is odd, so just start with 3
  *)
+
 boolean func isPrime(int n) {
-  var i <- 3;
-  while (i < n) do {
-    if (n / i * i = n) then { return false; }
-    i <- i + 2;
-  }
-  return true;
+  return false;
 }
 
 int func program() {
-  var current <- 3;       # type inferred
-  int nPrimes <- 2;       # explicit type
-  while current < 100 do {
-    if isPrime(current) then { nPrimes <- nPrimes + 1;}
-    current <- current + 2;
-  }
-  boolean b1 <- true;
-  boolean b2;
-  b2 <- false;
-  isPrime(b2);
-  return nPrimes;
+  return true;
 }
 

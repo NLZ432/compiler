@@ -58,8 +58,8 @@ public:
   // std::any visitSelectAlt(WPLParser::SelectAltContext *ctx) override;
   // std::any visitCall(WPLParser::CallContext *ctx) override;
   // std::any visitArg(WPLParser::ArgContext *ctx) override;
-  // std::any visitReturn(WPLParser::ReturnContext *ctx) override;
-  // std::any visitConstant(WPLParser::ConstantContext *ctx) override;
+  std::any visitReturn(WPLParser::ReturnContext *ctx) override;
+  std::any visitConstant(WPLParser::ConstantContext *ctx) override;
   // std::any visitAssignment(WPLParser::AssignmentContext *ctx) override;
   // std::any visitArrayIndex(WPLParser::ArrayIndexContext *ctx) override;
   // std::any visitAndExpr(WPLParser::AndExprContext *ctx) override;
