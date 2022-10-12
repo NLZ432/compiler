@@ -261,7 +261,8 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
   }
   else if (ctx->STRING())
   {
-    v = builder->getInt32(0); // TODO: fix
+    std::string s = ctx->getText();
+    v = builder->CreateGlobalStringPtr(s);
   }
   return v;
 }

@@ -7,6 +7,6 @@ boolean func isPrime(int n) {
 }
 
 int func program() {
-  return 2;
+  return "hiii";
 }
 
