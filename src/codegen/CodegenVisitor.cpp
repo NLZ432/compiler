@@ -281,15 +281,28 @@ std::any CodegenVisitor::visitEqExpr(WPLParser::EqExprContext *ctx) {
   return v;
 }
 
-// std::any CodegenVisitor::visitRelExpr(WPLParser::RelExprContext *ctx) {
-//   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
-//   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
-//   if (leftt != SymType::INT || rightt != SymType::INT)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "cannot compare " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
-//   }
-//   return SymType::BOOL;
-// }
+std::any CodegenVisitor::visitRelExpr(WPLParser::RelExprContext *ctx) {
+  Value *lVal = std::any_cast<Value *>(ctx->left->accept(this));
+  Value *rVal = std::any_cast<Value *>(ctx->right->accept(this));
+  Value *v;
+  if (ctx->LESS())
+  {
+    v = builder->CreateICmpSLT(lVal, rVal);
+  }
+  else if (ctx->LEQ())
+  {
+    v = builder->CreateICmpSLE(lVal, rVal);
+  }
+  else if (ctx->GTR())
+  {
+    v = builder->CreateICmpSGT(lVal, rVal);
+  }
+  else if (ctx->GEQ())
+  {
+    v = builder->CreateICmpSGE(lVal, rVal);
+  }
+  return v;
+}
 
 // std::any CodegenVisitor::visitMultExpr(WPLParser::MultExprContext *ctx) {
 //   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
