@@ -49,8 +49,18 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   Value *v;
 
   std::string funcName = ctx->fh->id->getText();
+  std::vector<Type*> argtypes;
+  if (ctx->fh->p)
+  {
+    for (WPLParser::TypeContext* tctx : ctx->fh->p->types)
+    {
+      if (tctx->BOOL()) argtypes.push_back(Int1Ty);
+      if (tctx->INT()) argtypes.push_back(Int32Ty);
+      if (tctx->STR()) argtypes.push_back(i8p);
+    }
+  }
 
-  FunctionType *funcType = FunctionType::get(Int32Ty, {Int32Ty, Int8PtrPtrTy}, false);
+  FunctionType *funcType = FunctionType::get(Int32Ty, argtypes, false);
   Function *func = Function::Create(funcType, GlobalValue::ExternalLinkage, funcName, module);
   BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", func);
   builder->SetInsertPoint(bBlock);
