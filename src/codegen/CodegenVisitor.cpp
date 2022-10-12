@@ -92,12 +92,12 @@ std::any CodegenVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationCont
     Symbol* symbol = props->getBinding(sctx);
     Type* type = llvmTypeFromSymType(symbol->type);
     Value* alloc = builder->CreateAlloca(type, 0, symbol->identifier);
-    symbol->defined = true;
     symbol->val = alloc;
     if (sctx->vi)
     {
       Value* v = std::any_cast<Value *>(sctx->vi->c->accept(this));
       builder->CreateStore(v, symbol->val); 
+      symbol->defined = true;
     }
   }
   return Int32Zero;
@@ -110,7 +110,21 @@ std::any CodegenVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
     Symbol* symbol = props->getBinding(ctx->exprs[i]);
     Value* v = std::any_cast<Value *>(ctx->exprs[i]->accept(this));
     builder->CreateStore(v, symbol->val);
+    symbol->defined = true;
   }
+  return v;
+}
+
+std::any CodegenVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
+  Value* v = Int32Zero;
+  Symbol* symbol = props->getBinding(ctx); 
+  Type* type = llvmTypeFromSymType(symbol->type);
+  if (!symbol->defined)
+  {
+    errors.addCodegenError(ctx->getStart(), "Symbol " + symbol->identifier + " has not been defined.");
+    return v;
+  }
+  v = builder->CreateLoad(type, symbol->val, symbol->identifier);
   return v;
 }
 
@@ -317,18 +331,6 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
 //     errors.addSemanticError(ctx->getStart(), "cannot AND " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). booleans only.");
 //   }
 //   return SymType::BOOL;
-// }
-
-// std::any CodegenVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
-//   std::string id = ctx->ID()->getText();
-//   Symbol *symbol = stmgr->findSymbol(id);
-//   SymType t = SymType::UNDEFINED;
-//   if (symbol == nullptr) {
-//     errors.addSemanticError(ctx->getStart(), id + " undeclared.");
-//   } else {
-//     t = symbol->type;
-//   } 
-//   return t;
 // }
 
 // std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {

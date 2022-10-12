@@ -287,6 +287,7 @@ std::any SemanticVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
     errors.addSemanticError(ctx->getStart(), id + " undeclared.");
   } else {
     t = symbol->type;
+    bindings->bind(ctx, symbol);
   } 
   return t;
 }

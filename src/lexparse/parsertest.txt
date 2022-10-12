@@ -3,10 +3,8 @@
  *)
 
 boolean func isPrime(int n) {
-  int swag <- 1, swag2 <- 2;
-  int yeet <- 0;
-  swag, yeet <- 3, 2;
-  return false;
+  int swag <- 1;
+  return swag;
 }
 
 int func program() {
