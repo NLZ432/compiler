@@ -86,6 +86,30 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   return v;
 }
 
+std::any CodegenVisitor::visitProcedure(WPLParser::ProcedureContext *ctx) {
+  Value *v;
+
+  std::string procName = ctx->ph->id->getText();
+  std::vector<Type*> argtypes;
+  if (ctx->ph->p)
+  {
+    for (WPLParser::TypeContext* tctx : ctx->ph->p->types)
+    {
+      argtypes.push_back(llvmTypeFromWPLType(tctx));
+    }
+  }
+
+  FunctionType *procType = FunctionType::get(VoidTy, argtypes, false);
+  Function *proc = Function::Create(procType, GlobalValue::ExternalLinkage, procName, module);
+
+  BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", proc);
+  builder->SetInsertPoint(bBlock);
+
+  ctx->b->accept(this);
+
+  return v;
+}
+
 std::any CodegenVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
   for (WPLParser::ScalarContext* sctx : ctx->scalars)
   {
@@ -128,72 +152,7 @@ std::any CodegenVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
   return v;
 }
 
-// std::any CodegenVisitor::visitScalar(WPLParser::ScalarContext *ctx) {
-//   SymType t;
-//   if (ctx->vi != nullptr)
-//   {
-//     t = std::any_cast<SymType>(ctx->vi->c->accept(this));
-//   }
-//   else
-//   {
-//     t = SymType::UNDEFINED;
-//   }
-
-//   std::string id = ctx->id->getText();
-//   Symbol *symbol = stmgr->findSymbol(id);
-//   if (symbol == nullptr) {
-//     symbol = stmgr->addSymbol(id, t);
-//     bindings->bind(ctx, symbol);
-//   } else {
-//     errors.addSemanticError(ctx->getStart(), "variable redeclaration: " + id);
-//   }
-//   return t;
-// }
-
 // std::any CodegenVisitor::visitArrayDeclaration(WPLParser::ArrayDeclarationContext *ctx) {
-//   return SymType::UNDEFINED;
-// }
-
-// std::any CodegenVisitor::visitType(WPLParser::TypeContext *ctx) {
-//   SymType t = SymType::UNDEFINED;
-//   if (ctx->BOOL())
-//   {
-//     t = SymType::BOOL;
-//   }
-//   else if (ctx->INT())
-//   {
-//     t = SymType::INT;
-//   }
-//   else if (ctx->STR())
-//   {
-//     t = SymType::STR;
-//   }
-//   return t;
-// }
-
-// std::any CodegenVisitor::visitProcedure(WPLParser::ProcedureContext *ctx) {
-//   std::string id = ctx->ph->id->getText();
-
-//   stmgr->enterScope();
-//   if (ctx->ph->p)
-//   {
-//     for (unsigned long i = 0; i < ctx->ph->p->types.size(); i++)
-//     {
-//       std::string id = ctx->ph->p->ids[i]->getText();
-//       SymType t = std::any_cast<SymType>(ctx->ph->p->types[i]->accept(this));
-//       stmgr->addSymbol(id, t);
-//     }
-//   }
-//   visitChildren(ctx->b);
-//   stmgr->exitScope();
-
-//   Symbol *symbol = stmgr->findSymbol(id);
-//   if (symbol == nullptr) {
-//     symbol = stmgr->addSymbol(id, SymType::UNDEFINED);
-//     bindings->bind(ctx, symbol);
-//   } else {
-//     errors.addSemanticError(ctx->getStart(), "procedure redefinition: " + id);
-//   }
 //   return SymType::UNDEFINED;
 // }
 

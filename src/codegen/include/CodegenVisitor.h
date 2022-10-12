@@ -51,7 +51,7 @@ public:
   // std::any visitScalar(WPLParser::ScalarContext *ctx) override;
   // std::any visitArrayDeclaration(WPLParser::ArrayDeclarationContext *ctx) override;
   // std::any visitType(WPLParser::TypeContext *ctx) override;
-  // std::any visitProcedure(WPLParser::ProcedureContext *ctx) override;
+  std::any visitProcedure(WPLParser::ProcedureContext *ctx) override;
   // std::any visitExternProcHeader(WPLParser::ExternProcHeaderContext *ctx) override;
   // std::any visitBlock(WPLParser::BlockContext *ctx) override;
   // std::any visitExternFuncHeader(WPLParser::ExternFuncHeaderContext *ctx) override;
