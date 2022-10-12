@@ -256,7 +256,8 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
   }
   else if (ctx->INTEGER())
   {
-    v = builder->getInt32(0); // TODO: fix
+    int i = stoi(ctx->getText());
+    v = builder->getInt32(i);
   }
   else if (ctx->STRING())
   {
