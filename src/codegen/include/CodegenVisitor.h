@@ -47,7 +47,7 @@ public:
   // Code generation functions
   std::any visitCompilationUnit(WPLParser::CompilationUnitContext *ctx) override;
   std::any visitFunction(WPLParser::FunctionContext *ctx) override;
-  // std::any visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) override;
+  std::any visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) override;
   // std::any visitScalar(WPLParser::ScalarContext *ctx) override;
   // std::any visitArrayDeclaration(WPLParser::ArrayDeclarationContext *ctx) override;
   // std::any visitType(WPLParser::TypeContext *ctx) override;
@@ -60,7 +60,7 @@ public:
   // std::any visitArg(WPLParser::ArgContext *ctx) override;
   std::any visitReturn(WPLParser::ReturnContext *ctx) override;
   std::any visitConstant(WPLParser::ConstantContext *ctx) override;
-  // std::any visitAssignment(WPLParser::AssignmentContext *ctx) override;
+  std::any visitAssignment(WPLParser::AssignmentContext *ctx) override;
   // std::any visitArrayIndex(WPLParser::ArrayIndexContext *ctx) override;
   // std::any visitAndExpr(WPLParser::AndExprContext *ctx) override;
   // std::any visitIDExpr(WPLParser::IDExprContext *ctx) override;
@@ -86,6 +86,7 @@ public:
   void modPrint() { module -> print(llvm::outs(), nullptr); }
 
   Type* llvmTypeFromWPLType(WPLParser::TypeContext* tctx);
+  Type* llvmTypeFromSymType(SymType tctx);
 
 private:
   // STManager *stmgr;

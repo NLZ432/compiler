@@ -53,6 +53,14 @@ Type* CodegenVisitor::llvmTypeFromWPLType(WPLParser::TypeContext* tctx)
       return VoidTy;
 }
 
+Type* CodegenVisitor::llvmTypeFromSymType(SymType t)
+{
+      if (t == SymType::BOOL) return Int1Ty;
+      if (t == SymType::INT) return Int32Ty;
+      if (t == SymType::STR) return i8p;
+      return VoidTy;
+}
+
 std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   Value *v;
 
@@ -78,30 +86,33 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   return v;
 }
 
-// std::any CodegenVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
-//   SymType t = std::any_cast<SymType>(ctx->scalars[0]->accept(this));
-//   if (ctx->t != nullptr && ctx->scalars[0]->vi != nullptr)
-//   {
-//     SymType declaredtype = std::any_cast<SymType>(ctx->t->accept(this));
-//     std::string constant = ctx->scalars[0]->vi->c->getText();
-//     if (declaredtype != t)
-//     {
-//       errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(declaredtype) + ", got type " + Symbol::getSymTypeName(t) + " (" + constant + ")");
-//     }
-//   }
+std::any CodegenVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
+  for (WPLParser::ScalarContext* sctx : ctx->scalars)
+  {
+    Symbol* symbol = props->getBinding(sctx);
+    Type* type = llvmTypeFromSymType(symbol->type);
+    Value* alloc = builder->CreateAlloca(type, 0, symbol->identifier);
+    symbol->defined = true;
+    symbol->val = alloc;
+    if (sctx->vi)
+    {
+      Value* v = std::any_cast<Value *>(sctx->vi->c->accept(this));
+      builder->CreateStore(v, symbol->val); 
+    }
+  }
+  return Int32Zero;
+}
 
-//   for (unsigned long i = 1; i < ctx->scalars.size(); i++)
-//   {
-//     SymType subscalartype = std::any_cast<SymType>(ctx->scalars[i]->accept(this));
-//     if (subscalartype != SymType::UNDEFINED && subscalartype != t && ctx->scalars[i]->vi != nullptr)
-//     {
-//       std::string constant = ctx->scalars[i]->vi->c->getText();
-//       errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(t) + ", got type " + Symbol::getSymTypeName(subscalartype) + " (" + constant + ")");
-//     }
-//   }
-
-//   return t;
-// }
+std::any CodegenVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
+  Value* v = Int32Zero;
+  for (int i = 0; i < ctx->exprs.size(); i++)
+  {
+    Symbol* symbol = props->getBinding(ctx->exprs[i]);
+    Value* v = std::any_cast<Value *>(ctx->exprs[i]->accept(this));
+    builder->CreateStore(v, symbol->val);
+  }
+  return v;
+}
 
 // std::any CodegenVisitor::visitScalar(WPLParser::ScalarContext *ctx) {
 //   SymType t;
@@ -293,44 +304,6 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
   }
   return v;
 }
-
-// std::any CodegenVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
-//   SymType t = SymType::UNDEFINED;
-
-//   if (ctx->targets.size() != ctx->exprs.size())
-//   {
-//     errors.addSemanticError(ctx->getStart(), "Expected equal number of target/expression pairs in assignment expression.");
-//     return t;
-//   }
-
-//   for (unsigned long i = 0; i < ctx->targets.size(); i++)
-//   {
-//     std::string id = ctx->targets[i]->getText();
-//     Symbol *symbol = stmgr->findSymbol(id);
-//     if (symbol != nullptr)
-//     {
-//       bindings->bind(ctx, symbol);
-//     }
-//     else
-//     {
-//       errors.addSemanticError(ctx->getStart(), id + " undeclared.");
-//       return t;
-//     }
-
-//     t = std::any_cast<SymType>(ctx->exprs[i]->accept(this));
-
-//     if (symbol->type == SymType::UNDEFINED)
-//     {
-//       symbol->type = t;
-//     }
-
-//     if (symbol->type != SymType::UNDEFINED && symbol->type != t)
-//     {
-//       errors.addSemanticError(ctx->getStart(), id + "Type mismatch. Expected " + Symbol::getSymTypeName(symbol->type) + ", got " +  Symbol::getSymTypeName(t));
-//     }
-//   }
-//   return t;
-// }
 
 // std::any CodegenVisitor::visitArrayIndex(WPLParser::ArrayIndexContext *ctx) {
 //   return SymType::UNDEFINED;
