@@ -31,15 +31,15 @@ void trace(std::string message, Value *v = nullptr) {
 
 std::any CodegenVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext *ctx) {
   // External functions
-    auto printf_prototype = FunctionType::get(i8p, true);
-    auto printf_fn = Function::Create(printf_prototype, Function::ExternalLinkage, "printf", module);
+  auto printf_prototype = FunctionType::get(i8p, true);
+  auto printf_fn = Function::Create(printf_prototype, Function::ExternalLinkage, "printf", module);
 
   FunctionCallee printExpr(printf_prototype, printf_fn);
 
   // Generate code for all expressions
   for (auto e : ctx->components) {
     // Generate code to output this expression
-    Value *exprResult = std::any_cast<Value *>(e->accept(this));  // OK
+    Value* exprVal = std::any_cast<Value*>(e->accept(this));
   }
 
   return nullptr;
@@ -110,6 +110,39 @@ std::any CodegenVisitor::visitProcedure(WPLParser::ProcedureContext *ctx) {
   return v;
 }
 
+std::any CodegenVisitor::visitExternDeclaration(WPLParser::ExternDeclarationContext *ctx) { 
+  Value* v = Int32Zero;
+  std::string procName;
+  std::vector<WPLParser::TypeContext*> parserargtypes;
+  std::vector<Type*> llvmargtypes;
+  Type* returntype;
+
+  if (ctx->externProcHeader())
+  {
+    if (ctx->externProcHeader()->params()) parserargtypes = ctx->externProcHeader()->params()->types;
+    procName = ctx->externProcHeader()->id->getText();
+    returntype = VoidTy;
+  }
+  else if (ctx->externFuncHeader())
+  {
+    if (ctx->externFuncHeader()->params()) parserargtypes = ctx->externFuncHeader()->params()->types;
+    procName = ctx->externFuncHeader()->id->getText();
+    returntype = llvmTypeFromWPLType(ctx->externFuncHeader()->t);
+  }
+
+  for (WPLParser::TypeContext* tctx : parserargtypes)
+  {
+    llvmargtypes.push_back(llvmTypeFromWPLType(tctx));
+  }
+
+  auto exproc_prototype = FunctionType::get(returntype, llvmargtypes, false);
+  auto exproc_fn = Function::Create(exproc_prototype, Function::ExternalLinkage, procName, module);
+
+  FunctionCallee exExpr(exproc_prototype, exproc_fn);
+
+  return v;
+}
+
 std::any CodegenVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
   for (WPLParser::ScalarContext* sctx : ctx->scalars)
   {
@@ -156,37 +189,11 @@ std::any CodegenVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitExternProcHeader(WPLParser::ExternProcHeaderContext *ctx) {
-//   std::string id = ctx->id->getText();
-//   Symbol *symbol = stmgr->findSymbol(id);
-//   if (symbol == nullptr) {
-//     symbol = stmgr->addSymbol(id, SymType::UNDEFINED);
-//     bindings->bind(ctx, symbol);
-//   } else {
-//     errors.addSemanticError(ctx->getStart(), "procedure redefinition: " + id);
-//   }
-//   return SymType::UNDEFINED;
-// }
-
 // std::any CodegenVisitor::visitBlock(WPLParser::BlockContext *ctx) {
 //   stmgr->enterScope();
 //   visitChildren(ctx);
 //   stmgr->exitScope();
 //   return SymType::UNDEFINED;
-// }
-
-// std::any CodegenVisitor::visitExternFuncHeader(WPLParser::ExternFuncHeaderContext *ctx) {
-//   SymType t = std::any_cast<SymType>(ctx->t->accept(this));
-//   std::string id = ctx->id->getText();
-
-//   Symbol *symbol = stmgr->findSymbol(id);
-//   if (symbol == nullptr) {
-//     symbol = stmgr->addSymbol(id, t);
-//     bindings->bind(ctx, symbol);
-//   } else {
-//     errors.addSemanticError(ctx->getStart(), "function redefinition: " + id);
-//   }
-//   return t;
 // }
 
 // std::any CodegenVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {

@@ -7,6 +7,10 @@ boolean func isPrime(int n) {
   return swag;
 }
 
+
+extern proc swagproc(int n, str j);
+extern boolean func swagfunc();
+
 int func program() {
   return isPrime(1, 2, 3);
 }
