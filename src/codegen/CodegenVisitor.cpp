@@ -45,23 +45,31 @@ std::any CodegenVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext 
   return nullptr;
 }
 
+Type* CodegenVisitor::llvmTypeFromWPLType(WPLParser::TypeContext* tctx)
+{
+      if (tctx->BOOL()) return Int1Ty;
+      if (tctx->INT()) return Int32Ty;
+      if (tctx->STR()) return i8p;
+      return VoidTy;
+}
+
 std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   Value *v;
 
   std::string funcName = ctx->fh->id->getText();
+  Type* returntype = llvmTypeFromWPLType(ctx->fh->t);
   std::vector<Type*> argtypes;
   if (ctx->fh->p)
   {
     for (WPLParser::TypeContext* tctx : ctx->fh->p->types)
     {
-      if (tctx->BOOL()) argtypes.push_back(Int1Ty);
-      if (tctx->INT()) argtypes.push_back(Int32Ty);
-      if (tctx->STR()) argtypes.push_back(i8p);
+      argtypes.push_back(llvmTypeFromWPLType(tctx));
     }
   }
 
-  FunctionType *funcType = FunctionType::get(Int32Ty, argtypes, false);
+  FunctionType *funcType = FunctionType::get(returntype, argtypes, false);
   Function *func = Function::Create(funcType, GlobalValue::ExternalLinkage, funcName, module);
+
   BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", func);
   builder->SetInsertPoint(bBlock);
   v = builder->CreateRet(Int32Zero);

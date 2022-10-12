@@ -85,6 +85,8 @@ public:
   llvm::Module *getModule() { return module; }
   void modPrint() { module -> print(llvm::outs(), nullptr); }
 
+  Type* llvmTypeFromWPLType(WPLParser::TypeContext* tctx);
+
 private:
   // STManager *stmgr;
   PropertyManager *props;
