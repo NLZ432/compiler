@@ -2,16 +2,10 @@
  * We know that n is odd, so just start with 3
  *)
 
-boolean func isPrime(int n) {
-  int swag <- 1;
-  return swag;
-}
-
-
-extern proc swagproc(int n, str j);
-extern boolean func swagfunc();
-
 int func program() {
-  return isPrime(1, 2, 3);
+    int a <- 1;
+    int b <- 2;
+    boolean c;
+    c <- ((b = b) = (a = a));
 }
 

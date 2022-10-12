@@ -70,12 +70,12 @@ public:
   // std::any visitArrayLengthExpr(WPLParser::ArrayLengthExprContext *ctx) override;
   // std::any visitUMinusExpr(WPLParser::UMinusExprContext *ctx) override;
   // std::any visitOrExpr(WPLParser::OrExprContext *ctx) override;
-  // std::any visitEqExpr(WPLParser::EqExprContext *ctx) override;
+  std::any visitEqExpr(WPLParser::EqExprContext *ctx) override;
   std::any visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) override;
   // std::any visitNotExpr(WPLParser::NotExprContext *ctx) override;
   // std::any visitLoop(WPLParser::LoopContext *ctx) override;
   // std::any visitConditional(WPLParser::ConditionalContext *ctx) override;
-  // std::any visitParenExpr(WPLParser::ParenExprContext *ctx) override;
+  std::any visitParenExpr(WPLParser::ParenExprContext *ctx) override;
 
   std::string getErrors() { return errors.errorList(); }
   // STManager *getSTManager() { return stmgr; }

@@ -189,22 +189,6 @@ std::any CodegenVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitBlock(WPLParser::BlockContext *ctx) {
-//   stmgr->enterScope();
-//   visitChildren(ctx);
-//   stmgr->exitScope();
-//   return SymType::UNDEFINED;
-// }
-
-// std::any CodegenVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
-//   SymType et = std::any_cast<SymType>(ctx->e->accept(this));
-//   if (et != SymType::BOOL)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "expected a boolean expression, got " + ctx->e->getText());
-//   }
-//   return SymType::UNDEFINED;
-// }
-
 std::any CodegenVisitor::visitCall(WPLParser::CallContext *ctx) {
   Value* v = Int32Zero;
   std::string id = ctx->id->getText();
@@ -285,23 +269,17 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
   return v;
 }
 
-// std::any CodegenVisitor::visitArrayIndex(WPLParser::ArrayIndexContext *ctx) {
-//   return SymType::UNDEFINED;
-// }
-
-// std::any CodegenVisitor::visitAndExpr(WPLParser::AndExprContext *ctx) {
-//   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
-//   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
-//   if (leftt != SymType::BOOL || rightt != SymType::BOOL)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "cannot AND " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). booleans only.");
-//   }
-//   return SymType::BOOL;
-// }
-
-// std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
-//   return SymType::UNDEFINED;
-// }
+std::any CodegenVisitor::visitEqExpr(WPLParser::EqExprContext *ctx) {
+  Value *lVal = std::any_cast<Value *>(ctx->left->accept(this));
+  Value *rVal = std::any_cast<Value *>(ctx->right->accept(this));
+  Value *v;
+  if (ctx->EQUAL()) {
+    v = builder->CreateICmpEQ(lVal, rVal);
+  } else {
+    v = builder->CreateICmpNE(lVal, rVal);
+  }
+  return v;
+}
 
 // std::any CodegenVisitor::visitRelExpr(WPLParser::RelExprContext *ctx) {
 //   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
@@ -333,6 +311,39 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
 //   return SymType::INT;
 // }
 
+// std::any CodegenVisitor::visitAndExpr(WPLParser::AndExprContext *ctx) {
+//   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
+//   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
+//   if (leftt != SymType::BOOL || rightt != SymType::BOOL)
+//   {
+//     errors.addSemanticError(ctx->getStart(), "cannot AND " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). booleans only.");
+//   }
+//   return SymType::BOOL;
+// }
+
+// std::any CodegenVisitor::visitOrExpr(WPLParser::OrExprContext *ctx) {
+//   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
+//   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
+//   if (leftt != SymType::BOOL || rightt != SymType::BOOL)
+//   {
+//     errors.addSemanticError(ctx->getStart(), "cannot OR " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). booleans only.");
+//   }
+//   return SymType::BOOL;
+// }
+
+// std::any CodegenVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
+//   SymType e = std::any_cast<SymType>(ctx->e->accept(this));
+//   if (e != SymType::BOOL)
+//   {
+//     errors.addSemanticError(ctx->getStart(), "expected boolean, got " + ctx->e->getText());
+//   }
+//   return SymType::BOOL;
+// }
+
+// std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
+//   return SymType::UNDEFINED;
+// }
+
 // std::any CodegenVisitor::visitArrayLengthExpr(WPLParser::ArrayLengthExprContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
@@ -346,34 +357,19 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
 //   return SymType::INT;
 // }
 
-// std::any CodegenVisitor::visitOrExpr(WPLParser::OrExprContext *ctx) {
-//   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
-//   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
-//   if (leftt != SymType::BOOL || rightt != SymType::BOOL)
+// std::any CodegenVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
+//   SymType et = std::any_cast<SymType>(ctx->e->accept(this));
+//   if (et != SymType::BOOL)
 //   {
-//     errors.addSemanticError(ctx->getStart(), "cannot OR " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). booleans only.");
+//     errors.addSemanticError(ctx->getStart(), "expected a boolean expression, got " + ctx->e->getText());
 //   }
-//   return SymType::BOOL;
+//   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitEqExpr(WPLParser::EqExprContext *ctx) {
-//   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
-//   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
-//   if (leftt != rightt)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "cannot compare " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). must be same type.");
-//   }
-//   return SymType::BOOL;
+// std::any CodegenVisitor::visitArrayIndex(WPLParser::ArrayIndexContext *ctx) {
+//   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
-//   SymType e = std::any_cast<SymType>(ctx->e->accept(this));
-//   if (e != SymType::BOOL)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "expected boolean, got " + ctx->e->getText());
-//   }
-//   return SymType::BOOL;
-// }
 
 // std::any CodegenVisitor::visitLoop(WPLParser::LoopContext *ctx) {
 //   SymType condt = std::any_cast<SymType>(ctx->e->accept(this));
@@ -402,10 +398,9 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitParenExpr(WPLParser::ParenExprContext *ctx) {
-//   return std::any_cast<SymType>(ctx->expr()->accept(this));
-// }
-
+std::any CodegenVisitor::visitParenExpr(WPLParser::ParenExprContext *ctx) {
+  return std::any_cast<Value *>(ctx->expr()->accept(this));
+}
 
 // // /**
 // //  * @brief Top-level visitor. Creates the beginning and end code. In between

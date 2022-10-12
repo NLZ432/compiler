@@ -21,50 +21,31 @@ std::any SemanticVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext
 }
 
 std::any SemanticVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
-  SymType t = std::any_cast<SymType>(ctx->scalars[0]->accept(this));
-  if (ctx->t != nullptr && ctx->scalars[0]->vi != nullptr)
+  SymType declaredtype = std::any_cast<SymType>(ctx->t->accept(this));
+  for (WPLParser::ScalarContext* sctx : ctx->scalars)
   {
-    SymType declaredtype = std::any_cast<SymType>(ctx->t->accept(this));
-    std::string constant = ctx->scalars[0]->vi->c->getText();
-    if (declaredtype != t)
+    // if assignment, check type
+    if (sctx->vi)
     {
-      errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(declaredtype) + ", got type " + Symbol::getSymTypeName(t) + " (" + constant + ")");
+      SymType t = std::any_cast<SymType>(sctx->vi->c->accept(this));
+      std::string constant = sctx->vi->c->getText();
+      if (declaredtype != t)
+      {
+        errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(declaredtype) + ", got type " + Symbol::getSymTypeName(t) + " (" + constant + ")");
+      }
+    }
+    // create binding
+    std::string id = sctx->id->getText();
+    Symbol *symbol = stmgr->findSymbol(id);
+    if (symbol == nullptr) {
+      symbol = stmgr->addSymbol(id, declaredtype);
+      bindings->bind(sctx, symbol);
+    } else {
+      errors.addSemanticError(ctx->getStart(), "variable redeclaration: " + id);
     }
   }
 
-  for (unsigned long i = 1; i < ctx->scalars.size(); i++)
-  {
-    SymType subscalartype = std::any_cast<SymType>(ctx->scalars[i]->accept(this));
-    if (subscalartype != SymType::UNDEFINED && subscalartype != t && ctx->scalars[i]->vi != nullptr)
-    {
-      std::string constant = ctx->scalars[i]->vi->c->getText();
-      errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(t) + ", got type " + Symbol::getSymTypeName(subscalartype) + " (" + constant + ")");
-    }
-  }
-
-  return t;
-}
-
-std::any SemanticVisitor::visitScalar(WPLParser::ScalarContext *ctx) {
-  SymType t;
-  if (ctx->vi != nullptr)
-  {
-    t = std::any_cast<SymType>(ctx->vi->c->accept(this));
-  }
-  else
-  {
-    t = SymType::UNDEFINED;
-  }
-
-  std::string id = ctx->id->getText();
-  Symbol *symbol = stmgr->findSymbol(id);
-  if (symbol == nullptr) {
-    symbol = stmgr->addSymbol(id, t);
-    bindings->bind(ctx, symbol);
-  } else {
-    errors.addSemanticError(ctx->getStart(), "variable redeclaration: " + id);
-  }
-  return t;
+  return declaredtype;
 }
 
 std::any SemanticVisitor::visitArrayDeclaration(WPLParser::ArrayDeclarationContext *ctx) {
