@@ -56,7 +56,7 @@ public:
   // std::any visitBlock(WPLParser::BlockContext *ctx) override;
   // std::any visitExternFuncHeader(WPLParser::ExternFuncHeaderContext *ctx) override;
   // std::any visitSelectAlt(WPLParser::SelectAltContext *ctx) override;
-  // std::any visitCall(WPLParser::CallContext *ctx) override;
+  std::any visitCall(WPLParser::CallContext *ctx) override;
   // std::any visitArg(WPLParser::ArgContext *ctx) override;
   std::any visitReturn(WPLParser::ReturnContext *ctx) override;
   std::any visitConstant(WPLParser::ConstantContext *ctx) override;
@@ -72,7 +72,7 @@ public:
   // std::any visitUMinusExpr(WPLParser::UMinusExprContext *ctx) override;
   // std::any visitOrExpr(WPLParser::OrExprContext *ctx) override;
   // std::any visitEqExpr(WPLParser::EqExprContext *ctx) override;
-  // std::any visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) override;
+  std::any visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) override;
   // std::any visitNotExpr(WPLParser::NotExprContext *ctx) override;
   // std::any visitLoop(WPLParser::LoopContext *ctx) override;
   // std::any visitConditional(WPLParser::ConditionalContext *ctx) override;

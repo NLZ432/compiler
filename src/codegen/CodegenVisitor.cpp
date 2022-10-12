@@ -214,23 +214,50 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitCall(WPLParser::CallContext *ctx) {
-//     std::string id = ctx->id->getText();
-//     Symbol *symbol = stmgr->findSymbol(id);
-//     if (symbol == nullptr)
-//     {
-//       errors.addSemanticError(ctx->getStart(), id + " undeclared.");
-//       return SymType::UNDEFINED;
-//     }
-//     // TODO make sure its actually a function
-//     // TODO check args
-//     return symbol->type;
-// }
+std::any CodegenVisitor::visitCall(WPLParser::CallContext *ctx) {
+  Value* v = Int32Zero;
+  std::string id = ctx->id->getText();
 
+  Function* called_func = module->getFunction(id);
+  if (!called_func)
+  {
+    errors.addCodegenError(ctx->getStart(), "No definition found for function " + id);
+    return v;
+  }
 
-// std::any CodegenVisitor::visitArg(WPLParser::ArgContext *ctx) {
-//   return SymType::UNDEFINED;
-// }
+  std::vector<Value *> args;
+  if (ctx->arguments())
+  {
+    for (WPLParser::ArgContext* arg : ctx->arguments()->args)
+    {
+      args.push_back(std::any_cast<Value *>(arg->accept(this)));
+    }
+  }
+
+  v = builder->CreateCall(called_func, args);
+  return v;
+}
+
+std::any CodegenVisitor::visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) {
+  Value* v = Int32Zero;
+  std::string id = ctx->fpname->getText();
+
+  Function* called_func = module->getFunction(id);
+  if (!called_func)
+  {
+    errors.addCodegenError(ctx->getStart(), "No definition found for function " + id);
+    return v;
+  }
+
+  std::vector<Value *> args;
+  for (WPLParser::ExprContext* arg : ctx->args)
+  {
+    args.push_back(std::any_cast<Value *>(arg->accept(this)));
+  }
+
+  v = builder->CreateCall(called_func, args);
+  return v;
+}
 
 std::any CodegenVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
   Value* v = Int32Zero;
@@ -396,19 +423,6 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
 //     errors.addSemanticError(ctx->getStart(), "cannot compare " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). must be same type.");
 //   }
 //   return SymType::BOOL;
-// }
-
-// std::any CodegenVisitor::visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) {
-//   std::string id = ctx->fpname->getText();
-//   Symbol *symbol = stmgr->findSymbol(id);
-//   SymType t = SymType::UNDEFINED;
-//   if (symbol == nullptr) {
-//     errors.addSemanticError(ctx->getStart(), id + " undeclared.");
-//   } else {
-//     t = symbol->type;
-//   } 
-//   // TODO verify argument types
-//   return t;
 // }
 
 // std::any CodegenVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
