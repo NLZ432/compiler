@@ -5,12 +5,20 @@
 extern str func printf(...);
 
 int func program() {
-    int a <- 1;
-    int b <- 2;
-    int c;
-    c <- (a + b);
-    int d <- 9;
-    printf("%d is da answer\n", (c * d));
+    int a <- 0;
+    if (true) then {
+        a <- 1;
+    } else {
+        a <- 2;
+    }
+    printf("%d\n", a);
+    printf("%d\n", a + a + a > ( 10 / 2 );
+    boolean b;
+    boolean c;
+    boolean d;
+    b, c <- true, true;
+    d <- b & c;
+    printf("%d\n", d);
     return 0;
 }
 

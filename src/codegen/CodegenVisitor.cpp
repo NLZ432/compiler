@@ -166,7 +166,7 @@ std::any CodegenVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationCont
       symbol->defined = true;
     }
   }
-  return Int32Zero;
+  return (Value*) Int32Zero;
 }
 
 std::any CodegenVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
@@ -255,7 +255,8 @@ std::any CodegenVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
   {
     v = std::any_cast<Value *>(ctx->expr()->accept(this)); 
   }
-  return builder->CreateRet(v);
+  builder->CreateRet(v);
+  return v;
 }
 
 std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
@@ -264,11 +265,11 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
   {
     if (ctx->getText() == "true")
     {
-      v = builder->getInt32(1);
+      v = builder->getInt1(1);
     }
     else
     {
-      v = builder->getInt32(0);
+      v = builder->getInt1(0);
     }
   }
   else if (ctx->INTEGER())
@@ -389,6 +390,41 @@ std::any CodegenVisitor::visitUMinusExpr(WPLParser::UMinusExprContext *ctx) {
   return v;
 }
 
+std::any CodegenVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
+  Value* v = Int32Zero;
+  
+  Function* func = builder->GetInsertBlock()->getParent(); 
+  
+  // true block
+  BasicBlock *trueblock = BasicBlock::Create(module->getContext(), "bTrue", func);
+  // false block
+  BasicBlock *falseblock = nullptr; 
+  if (ctx->noblock != nullptr) {
+    falseblock = BasicBlock::Create(module->getContext(), "bFalse", func);
+  }
+
+  // continue block
+  BasicBlock *continueblock = BasicBlock::Create(module->getContext(), "bContinue", func);
+  Value* eresult = std::any_cast<Value*>(ctx->e->accept(this));
+  builder->CreateCondBr(eresult, trueblock, falseblock);
+
+  // true block code
+  builder->SetInsertPoint(trueblock);
+  Value *b1result = std::any_cast<Value*>(ctx->yesblock->accept(this));
+  builder->CreateBr(continueblock);   // go to the continuation
+
+  // false block code
+  if (falseblock != nullptr) {
+    builder->SetInsertPoint(falseblock);
+    Value *b1result = std::any_cast<Value*>(ctx->noblock->accept(this));
+    builder->CreateBr(continueblock); // go to the continuation
+  }
+
+  builder->SetInsertPoint(continueblock);
+
+  return v;
+}
+
 // std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
@@ -422,26 +458,18 @@ std::any CodegenVisitor::visitUMinusExpr(WPLParser::UMinusExprContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
-//   SymType condt = std::any_cast<SymType>(ctx->e->accept(this));
-//   if (condt != SymType::BOOL)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "expected boolean expression for 'if' condition. got " + Symbol::getSymTypeName(condt));
-//   }
-  
-//   ctx->yesblock->accept(this);
-//   if (ctx->noblock)
-//   {
-//     ctx->noblock->accept(this);
-//   }
-
-//   return SymType::UNDEFINED;
-// }
-
 std::any CodegenVisitor::visitParenExpr(WPLParser::ParenExprContext *ctx) {
   return std::any_cast<Value *>(ctx->expr()->accept(this));
 }
 
+std::any CodegenVisitor::visitBlock(WPLParser::BlockContext *ctx) {
+  Value* v = Int32Zero;
+  for (WPLParser::StatementContext* sctx : ctx->statement())
+  {
+    v = std::any_cast<Value*>(sctx->accept(this));
+  }
+  return v;
+}
 // // /**
 // //  * @brief Top-level visitor. Creates the beginning and end code. In between
 // //  *  it visits all of the sub-expressions.

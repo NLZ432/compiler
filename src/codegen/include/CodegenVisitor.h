@@ -53,7 +53,7 @@ public:
   // std::any visitType(WPLParser::TypeContext *ctx) override;
   std::any visitProcedure(WPLParser::ProcedureContext *ctx) override;
   std::any visitExternDeclaration(WPLParser::ExternDeclarationContext *ctx) override;
-  // std::any visitBlock(WPLParser::BlockContext *ctx) override;
+  std::any visitBlock(WPLParser::BlockContext *ctx) override;
   // std::any visitSelectAlt(WPLParser::SelectAltContext *ctx) override;
   std::any visitCall(WPLParser::CallContext *ctx) override;
   // std::any visitArg(WPLParser::ArgContext *ctx) override;
@@ -74,7 +74,7 @@ public:
   std::any visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) override;
   std::any visitNotExpr(WPLParser::NotExprContext *ctx) override;
   // std::any visitLoop(WPLParser::LoopContext *ctx) override;
-  // std::any visitConditional(WPLParser::ConditionalContext *ctx) override;
+  std::any visitConditional(WPLParser::ConditionalContext *ctx) override;
   std::any visitParenExpr(WPLParser::ParenExprContext *ctx) override;
 
   std::string getErrors() { return errors.errorList(); }
