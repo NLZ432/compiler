@@ -302,7 +302,7 @@ std::any SemanticVisitor::visitAddExpr(WPLParser::AddExprContext *ctx) {
   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
   if (leftt != SymType::INT || rightt != SymType::INT)
   {
-    errors.addSemanticError(ctx->getStart(), "cannot add " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
+    errors.addSemanticError(ctx->getStart(), "cannot add/subtract " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
   }
   return SymType::INT;
 }
