@@ -63,20 +63,30 @@ Type* CodegenVisitor::llvmTypeFromSymType(SymType t)
 
 std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   Value *v;
+  Function* func;
 
   std::string funcName = ctx->fh->id->getText();
-  Type* returntype = llvmTypeFromWPLType(ctx->fh->t);
-  std::vector<Type*> argtypes;
-  if (ctx->fh->p)
+  if (funcName == "program") //TODO: semantic check that this function exists
   {
-    for (WPLParser::TypeContext* tctx : ctx->fh->p->types)
-    {
-      argtypes.push_back(llvmTypeFromWPLType(tctx));
-    }
+    FunctionType *mainFuncType = FunctionType::get(Int32Ty, {Int32Ty, Int8PtrPtrTy}, false);
+    func = Function::Create(mainFuncType,     GlobalValue::ExternalLinkage,
+      "main", module);
   }
+  else
+  {
+    Type* returntype = llvmTypeFromWPLType(ctx->fh->t);
+    std::vector<Type*> argtypes;
+    if (ctx->fh->p)
+    {
+      for (WPLParser::TypeContext* tctx : ctx->fh->p->types)
+      {
+        argtypes.push_back(llvmTypeFromWPLType(tctx));
+      }
+    }
 
-  FunctionType *funcType = FunctionType::get(returntype, argtypes, false);
-  Function *func = Function::Create(funcType, GlobalValue::ExternalLinkage, funcName, module);
+    FunctionType *funcType = FunctionType::get(returntype, argtypes, false);
+    func = Function::Create(funcType, GlobalValue::ExternalLinkage, funcName, module);
+  }
 
   BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", func);
   builder->SetInsertPoint(bBlock);

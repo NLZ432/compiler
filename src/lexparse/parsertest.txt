@@ -7,5 +7,6 @@ int func program() {
     int b <- 2;
     int c;
     c <- (-b);
+    return c;
 }
 
