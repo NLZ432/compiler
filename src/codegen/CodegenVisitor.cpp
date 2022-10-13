@@ -339,15 +339,20 @@ std::any CodegenVisitor::visitMultExpr(WPLParser::MultExprContext *ctx) {
   return v;
 }
 
-// std::any CodegenVisitor::visitAddExpr(WPLParser::AddExprContext *ctx) {
-//   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
-//   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
-//   if (leftt != SymType::INT || rightt != SymType::INT)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "cannot add " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
-//   }
-//   return SymType::INT;
-// }
+std::any CodegenVisitor::visitAddExpr(WPLParser::AddExprContext *ctx) {
+  Value *lVal = std::any_cast<Value *>(ctx->left->accept(this));
+  Value *rVal = std::any_cast<Value *>(ctx->right->accept(this));
+  Value *v;
+  if (ctx->PLUS())
+  {
+    v = builder->CreateNSWAdd(lVal, rVal);
+  }
+  if (ctx->MINUS())
+  {
+    v = builder->CreateNSWSub(lVal, rVal);
+  }
+  return v;
+}
 
 // std::any CodegenVisitor::visitUMinusExpr(WPLParser::UMinusExprContext *ctx) {
 //   SymType e = std::any_cast<SymType>(ctx->e->accept(this));
