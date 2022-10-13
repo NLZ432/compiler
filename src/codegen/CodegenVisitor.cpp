@@ -149,7 +149,6 @@ std::any CodegenVisitor::visitExternDeclaration(WPLParser::ExternDeclarationCont
   auto exproc_fn = Function::Create(exproc_prototype, Function::ExternalLinkage, procName, module);
 
   FunctionCallee exExpr(exproc_prototype, exproc_fn);
-
   return v;
 }
 
@@ -185,6 +184,11 @@ std::any CodegenVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
 std::any CodegenVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
   Value* v = Int32Zero;
   Symbol* symbol = props->getBinding(ctx); 
+  if (!symbol)
+  {
+    errors.addCodegenError(ctx->getStart(), "No associated symbol for the given context.");
+    return v;
+  }
   Type* type = llvmTypeFromSymType(symbol->type);
   if (!symbol->defined)
   {
@@ -215,7 +219,8 @@ std::any CodegenVisitor::visitCall(WPLParser::CallContext *ctx) {
   {
     for (WPLParser::ArgContext* arg : ctx->arguments()->args)
     {
-      args.push_back(std::any_cast<Value *>(arg->accept(this)));
+      std::any v = arg->accept(this);
+      args.push_back(std::any_cast<Value *>(v));
     }
   }
 
@@ -274,6 +279,20 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
   else if (ctx->STRING())
   {
     std::string s = ctx->getText();
+    // remove quotations added by getText()
+    s.erase(s.length()-1, 1);
+    s.erase(0, 1);
+    
+    // convert \n to newline characters
+    for (int i = 0; i < s.length(); i++)
+    {
+      if (s.length() <= i) break; // this loop is shrinking the string
+      if (s[i] == '\\' && s[i+1] == 'n')
+      {
+        s.erase(i, 2);
+        s.insert(i, "\n");
+      }
+    }
     v = builder->CreateGlobalStringPtr(s);
   }
   return v;

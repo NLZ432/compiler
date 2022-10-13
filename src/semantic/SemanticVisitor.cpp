@@ -173,13 +173,15 @@ std::any SemanticVisitor::visitCall(WPLParser::CallContext *ctx) {
       return SymType::UNDEFINED;
     }
     // TODO make sure its actually a function
-    // TODO check args
+    if (ctx->arguments())
+    {
+      for (WPLParser::ArgContext* arg : ctx->arguments()->args)
+      {
+      // TODO check that args are supposed to be there
+        arg->accept(this);
+      }
+    }
     return symbol->type;
-}
-
-
-std::any SemanticVisitor::visitArg(WPLParser::ArgContext *ctx) {
-  return SymType::UNDEFINED;
 }
 
 std::any SemanticVisitor::visitReturn(WPLParser::ReturnContext *ctx) {

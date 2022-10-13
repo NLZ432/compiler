@@ -40,7 +40,7 @@ select            : 'select' '{' selectAlt+ '}' ;
 selectAlt         : e=expr ':' s=statement ;  
 call              : id=ID '(' arguments? ')' ';' ;
 arguments         : (args+=arg (',' args+=arg)*) ;  
-arg               : (id=ID | c=constant) ; 
+arg               : expr ; 
 return            : 'return' expr? ';' ;
 
 constant          : INTEGER | STRING | BOOLEAN ;

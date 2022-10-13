@@ -2,11 +2,15 @@
  * We know that n is odd, so just start with 3
  *)
 
+extern str func printf(...);
+
 int func program() {
-    int a <- 2;
+    int a <- 1;
     int b <- 2;
     int c;
-    c <- (-b);
-    return c;
+    c <- (a + b);
+    int d <- 9;
+    printf("%d is da answer\n", (c * d));
+    return 0;
 }
 
