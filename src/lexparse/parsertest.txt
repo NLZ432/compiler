@@ -6,6 +6,6 @@ int func program() {
     boolean a <- true;
     boolean b <- true;
     boolean c;
-    c <- (a | b);
+    c <- (~b);
 }
 

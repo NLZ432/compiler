@@ -318,14 +318,11 @@ std::any CodegenVisitor::visitOrExpr(WPLParser::OrExprContext *ctx) {
   return v;
 }
 
-// std::any CodegenVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
-//   SymType e = std::any_cast<SymType>(ctx->e->accept(this));
-//   if (e != SymType::BOOL)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "expected boolean, got " + ctx->e->getText());
-//   }
-//   return SymType::BOOL;
-// }
+std::any CodegenVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
+  Value *e = std::any_cast<Value *>(ctx->e->accept(this));
+  Value *v = builder->CreateNot(e);
+  return v;
+}
 
 // std::any CodegenVisitor::visitMultExpr(WPLParser::MultExprContext *ctx) {
 //   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
