@@ -292,7 +292,7 @@ std::any SemanticVisitor::visitMultExpr(WPLParser::MultExprContext *ctx) {
   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
   if (leftt != SymType::INT || rightt != SymType::INT)
   {
-    errors.addSemanticError(ctx->getStart(), "cannot multiply " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
+    errors.addSemanticError(ctx->getStart(), "cannot multiply/divide " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
   }
   return SymType::INT;
 }

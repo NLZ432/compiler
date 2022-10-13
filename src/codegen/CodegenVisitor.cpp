@@ -324,15 +324,20 @@ std::any CodegenVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
   return v;
 }
 
-// std::any CodegenVisitor::visitMultExpr(WPLParser::MultExprContext *ctx) {
-//   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
-//   SymType rightt = std::any_cast<SymType>(ctx->right->accept(this));
-//   if (leftt != SymType::INT || rightt != SymType::INT)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "cannot multiply " + Symbol::getSymTypeName(leftt) + "(" + ctx->left->getText() + ") with " + Symbol::getSymTypeName(rightt) + " (" + ctx->right->getText() + "). integers only.");
-//   }
-//   return SymType::INT;
-// }
+std::any CodegenVisitor::visitMultExpr(WPLParser::MultExprContext *ctx) {
+  Value *lVal = std::any_cast<Value *>(ctx->left->accept(this));
+  Value *rVal = std::any_cast<Value *>(ctx->right->accept(this));
+  Value *v;
+  if (ctx->MUL())
+  {
+    v = builder->CreateNSWMul(lVal, rVal);
+  }
+  if (ctx->DIV())
+  {
+    v = builder->CreateSDiv(lVal, rVal);
+  }
+  return v;
+}
 
 // std::any CodegenVisitor::visitAddExpr(WPLParser::AddExprContext *ctx) {
 //   SymType leftt = std::any_cast<SymType>(ctx->left->accept(this));
@@ -344,14 +349,6 @@ std::any CodegenVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
 //   return SymType::INT;
 // }
 
-// std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
-//   return SymType::UNDEFINED;
-// }
-
-// std::any CodegenVisitor::visitArrayLengthExpr(WPLParser::ArrayLengthExprContext *ctx) {
-//   return SymType::UNDEFINED;
-// }
-
 // std::any CodegenVisitor::visitUMinusExpr(WPLParser::UMinusExprContext *ctx) {
 //   SymType e = std::any_cast<SymType>(ctx->e->accept(this));
 //   if (e != SymType::INT)
@@ -359,6 +356,14 @@ std::any CodegenVisitor::visitNotExpr(WPLParser::NotExprContext *ctx) {
 //     errors.addSemanticError(ctx->getStart(), "expected int, got " + ctx->e->getText());
 //   }
 //   return SymType::INT;
+// }
+
+// std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
+//   return SymType::UNDEFINED;
+// }
+
+// std::any CodegenVisitor::visitArrayLengthExpr(WPLParser::ArrayLengthExprContext *ctx) {
+//   return SymType::UNDEFINED;
 // }
 
 // std::any CodegenVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
