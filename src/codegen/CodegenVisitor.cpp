@@ -354,14 +354,11 @@ std::any CodegenVisitor::visitAddExpr(WPLParser::AddExprContext *ctx) {
   return v;
 }
 
-// std::any CodegenVisitor::visitUMinusExpr(WPLParser::UMinusExprContext *ctx) {
-//   SymType e = std::any_cast<SymType>(ctx->e->accept(this));
-//   if (e != SymType::INT)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "expected int, got " + ctx->e->getText());
-//   }
-//   return SymType::INT;
-// }
+std::any CodegenVisitor::visitUMinusExpr(WPLParser::UMinusExprContext *ctx) {
+  Value *e = std::any_cast<Value *>(ctx->e->accept(this));
+  Value *v = builder->CreateNSWSub(Int32Zero, e);
+  return v;
+}
 
 // std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
 //   return SymType::UNDEFINED;

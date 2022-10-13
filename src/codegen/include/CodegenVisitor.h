@@ -68,7 +68,7 @@ public:
   std::any visitMultExpr(WPLParser::MultExprContext *ctx) override;
   std::any visitAddExpr(WPLParser::AddExprContext *ctx) override;
   // std::any visitArrayLengthExpr(WPLParser::ArrayLengthExprContext *ctx) override;
-  // std::any visitUMinusExpr(WPLParser::UMinusExprContext *ctx) override;
+  std::any visitUMinusExpr(WPLParser::UMinusExprContext *ctx) override;
   std::any visitOrExpr(WPLParser::OrExprContext *ctx) override;
   std::any visitEqExpr(WPLParser::EqExprContext *ctx) override;
   std::any visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) override;
