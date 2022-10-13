@@ -3,9 +3,9 @@
  *)
 
 int func program() {
-    int a <- 1;
-    int b <- 2;
+    boolean a <- true;
+    boolean b <- true;
     boolean c;
-    c <- (a >= b);
+    c <- (a | b);
 }
 

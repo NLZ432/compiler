@@ -61,7 +61,7 @@ public:
   std::any visitConstant(WPLParser::ConstantContext *ctx) override;
   std::any visitAssignment(WPLParser::AssignmentContext *ctx) override;
   // std::any visitArrayIndex(WPLParser::ArrayIndexContext *ctx) override;
-  // std::any visitAndExpr(WPLParser::AndExprContext *ctx) override;
+  std::any visitAndExpr(WPLParser::AndExprContext *ctx) override;
   std::any visitIDExpr(WPLParser::IDExprContext *ctx) override;
   // std::any visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) override;
   std::any visitRelExpr(WPLParser::RelExprContext *ctx) override;
@@ -69,7 +69,7 @@ public:
   // std::any visitAddExpr(WPLParser::AddExprContext *ctx) override;
   // std::any visitArrayLengthExpr(WPLParser::ArrayLengthExprContext *ctx) override;
   // std::any visitUMinusExpr(WPLParser::UMinusExprContext *ctx) override;
-  // std::any visitOrExpr(WPLParser::OrExprContext *ctx) override;
+  std::any visitOrExpr(WPLParser::OrExprContext *ctx) override;
   std::any visitEqExpr(WPLParser::EqExprContext *ctx) override;
   std::any visitFuncProcCallExpr(WPLParser::FuncProcCallExprContext *ctx) override;
   // std::any visitNotExpr(WPLParser::NotExprContext *ctx) override;
