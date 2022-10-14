@@ -1,5 +1,0 @@
-# C negative test 1
-func program() {
-  int i;
-  i <- 1;
-}

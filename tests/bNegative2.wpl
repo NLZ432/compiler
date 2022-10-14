@@ -1,5 +1,0 @@
-# B negative test 2
-int func program() {
-  int i <- 1, b <- true;
-  return b;
-}
