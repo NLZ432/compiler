@@ -160,6 +160,8 @@ std::any CodegenVisitor::visitProcedure(WPLParser::ProcedureContext *ctx) {
 
   ctx->b->accept(this);
 
+  builder->CreateRet((Value*)nullptr);
+
   return v;
 }
 
