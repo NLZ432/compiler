@@ -282,8 +282,7 @@ std::any CodegenVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
   {
     v = std::any_cast<Value *>(ctx->expr()->accept(this)); 
   }
-  builder->CreateRet(v);
-  return v;
+  return builder->CreateRet(v);
 }
 
 std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
@@ -425,25 +424,42 @@ std::any CodegenVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
   // true block
   BasicBlock *trueblock = BasicBlock::Create(module->getContext(), "truebloc", func);
   // false block
-  BasicBlock *falseblock = BasicBlock::Create(module->getContext(), "falsebloc", func);
+  BasicBlock *falseblock = nullptr;
+  if (ctx->noblock)
+  {
+    falseblock = BasicBlock::Create(module->getContext(), "falsebloc", func);
+  }
 
   // continue block
   BasicBlock *continueblock = BasicBlock::Create(module->getContext(), "bContinue", func);
   Value* eresult = std::any_cast<Value*>(ctx->e->accept(this));
-  builder->CreateCondBr(eresult, trueblock, falseblock);
+  if (falseblock == nullptr)
+  {
+    builder->CreateCondBr(eresult, trueblock, continueblock);
+  }
+  else
+  {
+    builder->CreateCondBr(eresult, trueblock, falseblock);
+  }
 
   // true block code
   builder->SetInsertPoint(trueblock);
-  Value *b1result = std::any_cast<Value*>(ctx->yesblock->accept(this));
-  builder->CreateBr(continueblock);   // go to the continuation
+  Value *yesblocresult = std::any_cast<Value*>(ctx->yesblock->accept(this));
+  if (yesblocresult != Int32One) // no return
+  {
+    builder->CreateBr(continueblock); // go to the continuation
+  }
 
   // false block code
-  builder->SetInsertPoint(falseblock);
   if (ctx->noblock)
   {
-    Value *b1result = std::any_cast<Value*>(ctx->noblock->accept(this));
+    builder->SetInsertPoint(falseblock);
+    Value *noblocresult = std::any_cast<Value*>(ctx->noblock->accept(this));
+    if (noblocresult != Int32One) // no return
+    {
+      builder->CreateBr(continueblock); // go to the continuation
+    }
   }
-  builder->CreateBr(continueblock); // go to the continuation
 
   builder->SetInsertPoint(continueblock);
 
@@ -477,8 +493,11 @@ std::any CodegenVisitor::visitSelect(WPLParser::SelectContext *ctx) {
   {
     WPLParser::SelectAltContext* alt = ctx->selectAlt()[i];
     builder->SetInsertPoint(yesblocs[i]);
-    Value* blocResult = std::any_cast<Value*>(alt->s->accept(this));
-    builder->CreateBr(continueblock);
+    Value* blocresult = std::any_cast<Value*>(alt->s->accept(this));
+    if (blocresult != Int32One) // no return statement
+    {
+      builder->CreateBr(continueblock);
+    }
   }
 
   builder->SetInsertPoint(continueblock);
@@ -503,7 +522,10 @@ std::any CodegenVisitor::visitLoop(WPLParser::LoopContext *ctx) {
   // loop block code
   builder->SetInsertPoint(loopblock);
   Value *loopblocresult = std::any_cast<Value*>(ctx->b->accept(this));
-  builder->CreateBr(condblock);   // go back to the condition
+  if (loopblocresult != Int32One) // no return in bloc
+  {
+    builder->CreateBr(condblock);   // go back to the condition
+  }
 
   builder->SetInsertPoint(continueblock);
   return v;
@@ -529,7 +551,51 @@ std::any CodegenVisitor::visitBlock(WPLParser::BlockContext *ctx) {
   Value* v = Int32Zero;
   for (WPLParser::StatementContext* sctx : ctx->statement())
   {
-    v = std::any_cast<Value*>(sctx->accept(this));
+    if (sctx->return_())
+    {
+      v = Int32One;
+    }
+    sctx->accept(this);
   }
   return v;
 }
+
+std::any CodegenVisitor::visitStatement(WPLParser::StatementContext *ctx) {
+  Value* v = Int32Zero;
+  if (ctx->assignment())
+  {
+    ctx->assignment()->accept(this);
+  }
+  else if (ctx->loop())
+  {
+    ctx->loop()->accept(this);
+  }
+  else if (ctx->select())
+  {
+    ctx->select()->accept(this);
+  }
+  else if (ctx->conditional())
+  {
+    ctx->conditional()->accept(this);
+  }
+  else if (ctx->call())
+  {
+    ctx->call()->accept(this);
+  }
+  else if (ctx->block())
+  {
+    v = std::any_cast<Value*>(ctx->block()->accept(this));
+  }
+  else if (ctx->return_())
+  {
+    ctx->return_()->accept(this);
+    v = Int32One; // this is bad but it is part of how the compiler knows a statement has returned
+                  // so that it removes redundant branching to get rid of expected instruction number llvm errors
+  }
+  else if (ctx->varDeclaration())
+  {
+    ctx->varDeclaration()->accept(this);
+  }
+  return v;
+}
+

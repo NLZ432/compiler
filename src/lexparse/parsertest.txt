@@ -4,14 +4,14 @@
 
 extern str func printf(...);
 
-int func getA(str x) {
-    printf("%s\n", x);
-    return 1;
-}
-
 int func program() {
-    int a <- 2;
-    a <- getA("hii");
+    int i <- 3;
+    i <- (i + 2);
+    select {
+        false: printf("HI\n");
+        true: printf("HI2\n");
+    }
+    i <- (i + i);
     return 0;
 }
 

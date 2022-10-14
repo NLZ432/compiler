@@ -41,6 +41,7 @@ public:
     Int32One = ConstantInt::get(Int32Ty, 1, true);
     i8p = Type::getInt8PtrTy(module->getContext());
     Int8PtrPtrTy = i8p->getPointerTo();
+    ReturningBlockIndicator = Type::getPPC_FP128Ty(module->getContext());
   }
 
   // Code generation functions
@@ -80,6 +81,7 @@ public:
 
   std::any visitBlock(WPLParser::BlockContext *ctx) override;
   std::any visitParenExpr(WPLParser::ParenExprContext *ctx) override;
+  std::any visitStatement(WPLParser::StatementContext *ctx) override;
 
   std::string getErrors() { return errors.errorList(); }
   PropertyManager *getProperties() { return props; }
@@ -108,6 +110,7 @@ private:
   Type *Int32Ty;
   Type * i8p;
   Type *Int8PtrPtrTy;
+  Type *ReturningBlockIndicator;
   Constant *Int32Zero;
   Constant *Int32One;
 };
