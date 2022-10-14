@@ -6,19 +6,22 @@ extern str func printf(...);
 
 int func program() {
     int a <- 0;
-    if (true) then {
-        a <- 1;
-    } else {
-        a <- 2;
+    select {
+        false  : { 
+            a <- 1; 
+        }
+        true : { 
+            a <- 2;
+            printf("COND %d\n", (1 + 1 + 1) * 3);
+            if false {
+                printf("SWAG1 %d\n", (1 + 1 + 1) * 3);
+            } else {
+                printf("SWAG2 %d\n", (1 + 1 + 1) * 3);
+            }
+        }
+        true : { a <- 3; }
     }
     printf("%d\n", a);
-    printf("%d\n", a + a + a > ( 10 / 2 );
-    boolean b;
-    boolean c;
-    boolean d;
-    b, c <- true, true;
-    d <- b & c;
-    printf("%d\n", d);
     return 0;
 }
 

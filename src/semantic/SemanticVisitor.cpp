@@ -157,6 +157,7 @@ std::any SemanticVisitor::visitExternFuncHeader(WPLParser::ExternFuncHeaderConte
 
 std::any SemanticVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
   SymType et = std::any_cast<SymType>(ctx->e->accept(this));
+  SymType st = std::any_cast<SymType>(ctx->s->accept(this));
   if (et != SymType::BOOL)
   {
     errors.addSemanticError(ctx->getStart(), "expected a boolean expression, got " + ctx->e->getText());

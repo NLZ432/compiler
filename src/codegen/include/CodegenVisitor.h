@@ -54,7 +54,7 @@ public:
   std::any visitProcedure(WPLParser::ProcedureContext *ctx) override;
   std::any visitExternDeclaration(WPLParser::ExternDeclarationContext *ctx) override;
   std::any visitBlock(WPLParser::BlockContext *ctx) override;
-  // std::any visitSelectAlt(WPLParser::SelectAltContext *ctx) override;
+  std::any visitSelect(WPLParser::SelectContext *ctx) override;
   std::any visitCall(WPLParser::CallContext *ctx) override;
   // std::any visitArg(WPLParser::ArgContext *ctx) override;
   std::any visitReturn(WPLParser::ReturnContext *ctx) override;

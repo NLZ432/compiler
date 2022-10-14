@@ -425,6 +425,42 @@ std::any CodegenVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
   return v;
 }
 
+std::any CodegenVisitor::visitSelect(WPLParser::SelectContext *ctx) {
+  Value* v = Int32Zero;
+
+  Function* func = builder->GetInsertBlock()->getParent(); 
+
+  std::vector<BasicBlock*> yesblocs;
+  std::vector<BasicBlock*> condblocs;
+
+  for (int i = 0; i < ctx->selectAlt().size(); i++)
+  {
+    WPLParser::SelectAltContext* alt = ctx->selectAlt()[i];
+    yesblocs.push_back(BasicBlock::Create(module->getContext(), "selectbloc", func));
+    condblocs.push_back(BasicBlock::Create(module->getContext(), "condbloc", func));
+    Value* eresult = std::any_cast<Value*>(alt->e->accept(this));
+
+    builder->CreateCondBr(eresult, yesblocs[i], condblocs[i]);
+    builder->SetInsertPoint(condblocs[i]);
+  }
+
+  // continue block
+  BasicBlock *continueblock = BasicBlock::Create(module->getContext(), "continue", func);
+  builder->CreateBr(continueblock); // last false case, go to continue block
+
+  for (int i = 0; i < ctx->selectAlt().size(); i++)
+  {
+    WPLParser::SelectAltContext* alt = ctx->selectAlt()[i];
+    builder->SetInsertPoint(yesblocs[i]);
+    Value* blocResult = std::any_cast<Value*>(alt->s->accept(this));
+    builder->CreateBr(continueblock);
+  }
+
+  builder->SetInsertPoint(continueblock);
+
+  return v;
+}
+
 // std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
@@ -433,19 +469,9 @@ std::any CodegenVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
 
-// std::any CodegenVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
-//   SymType et = std::any_cast<SymType>(ctx->e->accept(this));
-//   if (et != SymType::BOOL)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "expected a boolean expression, got " + ctx->e->getText());
-//   }
-//   return SymType::UNDEFINED;
-// }
-
 // std::any CodegenVisitor::visitArrayIndex(WPLParser::ArrayIndexContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
-
 
 // std::any CodegenVisitor::visitLoop(WPLParser::LoopContext *ctx) {
 //   SymType condt = std::any_cast<SymType>(ctx->e->accept(this));
