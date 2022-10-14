@@ -459,6 +459,29 @@ std::any CodegenVisitor::visitSelect(WPLParser::SelectContext *ctx) {
   return v;
 }
 
+std::any CodegenVisitor::visitLoop(WPLParser::LoopContext *ctx) {
+  Value* v = Int32Zero;
+
+  Function* func = builder->GetInsertBlock()->getParent(); 
+  
+  BasicBlock *condblock = BasicBlock::Create(module->getContext(), "condbloc", func);
+  BasicBlock *loopblock = BasicBlock::Create(module->getContext(), "loopbloc", func);
+  BasicBlock *continueblock = BasicBlock::Create(module->getContext(), "continuebloc", func);
+
+  builder->CreateBr(condblock);
+  builder->SetInsertPoint(condblock);
+  Value* eresult = std::any_cast<Value*>(ctx->e->accept(this));
+  builder->CreateCondBr(eresult, loopblock, continueblock);
+
+  // loop block code
+  builder->SetInsertPoint(loopblock);
+  Value *loopblocresult = std::any_cast<Value*>(ctx->b->accept(this));
+  builder->CreateBr(condblock);   // go back to the condition
+
+  builder->SetInsertPoint(continueblock);
+  return v;
+}
+
 // std::any CodegenVisitor::visitSubscriptExpr(WPLParser::SubscriptExprContext *ctx) {
 //   return SymType::UNDEFINED;
 // }
@@ -468,17 +491,6 @@ std::any CodegenVisitor::visitSelect(WPLParser::SelectContext *ctx) {
 // }
 
 // std::any CodegenVisitor::visitArrayIndex(WPLParser::ArrayIndexContext *ctx) {
-//   return SymType::UNDEFINED;
-// }
-
-// std::any CodegenVisitor::visitLoop(WPLParser::LoopContext *ctx) {
-//   SymType condt = std::any_cast<SymType>(ctx->e->accept(this));
-//   if (condt != SymType::BOOL)
-//   {
-//     errors.addSemanticError(ctx->getStart(), "expected boolean expression for loop condition. got " + Symbol::getSymTypeName(condt));
-//   }
-  
-//   ctx->block()->accept(this);
 //   return SymType::UNDEFINED;
 // }
 
