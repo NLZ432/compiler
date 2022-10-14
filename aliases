@@ -1,0 +1,6 @@
+aliases:
+
+alias m="cmake -S . -B build && cmake --build build"
+alias c="../../build/bin/wplc -o wpl.ll wpl.wpl && cat wpl.ll"
+alias cc="c && clang -o wpl wpl.ll ../../wpl_runtime.c && ./wpl"
+

@@ -1,0 +1,5 @@
+# C positive test 1
+int a;
+int func program() {
+    return 0;
+}
