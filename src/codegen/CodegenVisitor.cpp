@@ -89,7 +89,29 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   }
 
   BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", func);
+
   builder->SetInsertPoint(bBlock);
+
+  // attach arg values to arg symbols
+  if (ctx->fh->p)
+  {
+    Function::arg_iterator argiterator = func->arg_begin();
+    for (int i = 0; i < ctx->fh->p->ids.size(); i++)
+    {
+      std::string id = ctx->fh->p->ids[i]->getText();
+      Symbol* symbol = props->getBinding(ctx->fh->p->ids[i]);
+      if (symbol == nullptr)
+      {
+        errors.addCodegenError(ctx->getStart(), "No symbol created for " + id);
+        return v;
+      }
+
+      Type* type = llvmTypeFromSymType(symbol->type);
+      Value* alloc = builder->CreateAlloca(type, 0, symbol->identifier);
+      symbol->val = alloc;
+      builder->CreateStore(argiterator++, symbol->val); 
+    }
+  }
 
   ctx->b->accept(this);
 
@@ -186,13 +208,18 @@ std::any CodegenVisitor::visitIDExpr(WPLParser::IDExprContext *ctx) {
   Symbol* symbol = props->getBinding(ctx); 
   if (!symbol)
   {
-    errors.addCodegenError(ctx->getStart(), "No associated symbol for the given context.");
+    errors.addCodegenError(ctx->getStart(), "Cannot find associated symbol for \"" + ctx->getText() + "\"");
     return v;
   }
   Type* type = llvmTypeFromSymType(symbol->type);
   if (!symbol->defined)
   {
     errors.addCodegenError(ctx->getStart(), "Symbol " + symbol->identifier + " has not been defined.");
+    return v;
+  }
+  if (!symbol->val)
+  {
+    errors.addCodegenError(ctx->getStart(), "No llvm value for symbol " + symbol->identifier);
     return v;
   }
   v = builder->CreateLoad(type, symbol->val, symbol->identifier);

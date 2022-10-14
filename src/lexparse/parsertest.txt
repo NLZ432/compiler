@@ -4,15 +4,14 @@
 
 extern str func printf(...);
 
+int func getA(str x) {
+    printf("%s\n", x);
+    return 1;
+}
+
 int func program() {
-    printf("HI\n");
-   
-    var a <- 1; 
-    while (a <= 10) do { 
-        printf("BANGER %d\n", a);
-        a <- (a + 1);
-    } #swag
-   
+    int a <- 2;
+    a <- getA("hii");
     return 0;
 }
 

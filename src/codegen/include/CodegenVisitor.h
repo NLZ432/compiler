@@ -26,7 +26,6 @@ public:
   // Pass in the appropriate elements
   CodegenVisitor(PropertyManager *pm, std::string moduleName)
   {
-    // stmgr = stm;
     props = pm;
     context = new LLVMContext();
     module = new Module(moduleName, *context);
@@ -92,7 +91,6 @@ public:
   Type* llvmTypeFromSymType(SymType tctx);
 
 private:
-  // STManager *stmgr;
   PropertyManager *props;
   WPLErrorHandler errors;
 

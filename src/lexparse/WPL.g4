@@ -22,7 +22,7 @@ function          : fh=funcHeader b=block  ;
 funcHeader        : t=type 'func' id=ID '(' p=params? ')' ;
 externFuncHeader  : t=type 'func' id=ID '(' ((params ',' ELLIPSIS) | params? | ELLIPSIS?) ')' ;
 
-params            : (types+=type ids+=ID (',' types+=type ids+=ID)*) ;
+params            : (types+=type ids+=expr (',' types+=type ids+=expr)*) ;
 block            : '{' statement+ '}' ;   // Change to expr ???
 
 statement         : assignment

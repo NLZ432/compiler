@@ -84,10 +84,11 @@ std::any SemanticVisitor::visitProcedure(WPLParser::ProcedureContext *ctx) {
     {
       std::string id = ctx->ph->p->ids[i]->getText();
       SymType t = std::any_cast<SymType>(ctx->ph->p->types[i]->accept(this));
-      stmgr->addSymbol(id, t);
+      Symbol* sym = stmgr->addSymbol(id, t);
+      sym->defined = true;
     }
   }
-  visitChildren(ctx->b);
+  ctx->b->accept(this);
   stmgr->exitScope();
 
   Symbol *symbol = stmgr->findSymbol(id);
@@ -123,10 +124,12 @@ std::any SemanticVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
     {
       std::string id = ctx->fh->p->ids[i]->getText();
       SymType t = std::any_cast<SymType>(ctx->fh->p->types[i]->accept(this));
-      stmgr->addSymbol(id, t);
+      Symbol* sym = stmgr->addSymbol(id, t);
+      bindings->bind(ctx->fh->p->ids[i], sym);
+      sym->defined = true;
     }
   }
-  visitChildren(ctx->b);
+  ctx->b->accept(this);
   stmgr->exitScope();
 
   Symbol *symbol = stmgr->findSymbol(id);
@@ -173,10 +176,14 @@ std::any SemanticVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
 std::any SemanticVisitor::visitCall(WPLParser::CallContext *ctx) {
     std::string id = ctx->id->getText();
     Symbol *symbol = stmgr->findSymbol(id);
+    SymType t = SymType::UNDEFINED;
     if (symbol == nullptr)
     {
       errors.addSemanticError(ctx->getStart(), id + " undeclared.");
-      return SymType::UNDEFINED;
+    }
+    else
+    {
+      t = symbol->type;
     }
     // TODO make sure its actually a function
     if (ctx->arguments())
@@ -187,7 +194,7 @@ std::any SemanticVisitor::visitCall(WPLParser::CallContext *ctx) {
         arg->accept(this);
       }
     }
-    return symbol->type;
+    return t;
 }
 
 std::any SemanticVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
@@ -356,7 +363,12 @@ std::any SemanticVisitor::visitFuncProcCallExpr(WPLParser::FuncProcCallExprConte
   } else {
     t = symbol->type;
   } 
-  // TODO verify argument types
+
+  for (WPLParser::ExprContext* arg : ctx->args)
+  {
+  // TODO check that args are supposed to be there
+    arg->accept(this);
+  }
   return t;
 }
 
