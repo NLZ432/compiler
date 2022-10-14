@@ -21,7 +21,8 @@ std::any SemanticVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext
 }
 
 std::any SemanticVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationContext *ctx) {
-  SymType declaredtype = std::any_cast<SymType>(ctx->t->accept(this));
+  SymType declaredtype = SymType::UNDEFINED;
+  if (ctx->t) declaredtype = std::any_cast<SymType>(ctx->t->accept(this));
   for (WPLParser::ScalarContext* sctx : ctx->scalars)
   {
     // if assignment, check type
@@ -29,7 +30,11 @@ std::any SemanticVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationCon
     {
       SymType t = std::any_cast<SymType>(sctx->vi->c->accept(this));
       std::string constant = sctx->vi->c->getText();
-      if (declaredtype != t)
+      if (declaredtype == SymType::UNDEFINED)
+      {
+        declaredtype = t;
+      }
+      else if (declaredtype != t)
       {
         errors.addSemanticError(ctx->getStart(), "scalar declaration type mismatch. expected type " + Symbol::getSymTypeName(declaredtype) + ", got type " + Symbol::getSymTypeName(t) + " (" + constant + ")");
       }
@@ -240,8 +245,7 @@ std::any SemanticVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
     {
       symbol->type = t;
     }
-
-    if (symbol->type != SymType::UNDEFINED && symbol->type != t)
+    else if (symbol->type != t)
     {
       errors.addSemanticError(ctx->getStart(), id + "Type mismatch. Expected " + Symbol::getSymTypeName(symbol->type) + ", got " +  Symbol::getSymTypeName(t));
     }
