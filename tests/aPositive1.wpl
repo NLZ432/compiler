@@ -1,0 +1,7 @@
+# A positive test 1
+int func program() {
+  var x;
+  int i <- 42;
+  x <- i;
+  return x;
+}
