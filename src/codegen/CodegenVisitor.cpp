@@ -230,7 +230,7 @@ std::any CodegenVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
   Value* v = Int32Zero;
   for (unsigned long i = 0; i < ctx->exprs.size(); i++)
   {
-    Symbol* symbol = props->getBinding(ctx->exprs[i]);
+    Symbol* symbol = props->getBinding(ctx);
     Value* v = std::any_cast<Value *>(ctx->exprs[i]->accept(this));
     builder->CreateStore(v, symbol->val);
     symbol->defined = true;

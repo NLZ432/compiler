@@ -239,7 +239,7 @@ std::any SemanticVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
     Symbol *symbol = stmgr->findSymbol(id);
     if (symbol != nullptr)
     {
-      bindings->bind(ctx->exprs[i], symbol);
+      bindings->bind(ctx, symbol);
       symbol->defined = true;
     }
     else
