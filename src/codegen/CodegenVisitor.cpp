@@ -38,7 +38,19 @@ std::any CodegenVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext 
 
   // Generate code for all expressions
   for (auto e : ctx->components) {
-    e->accept(this);
+    if (e->varDeclaration() && e->varDeclaration()->scalarDeclaration())
+    {
+      WPLParser::ScalarDeclarationContext* sdctx = e->varDeclaration()->scalarDeclaration();
+      Type* t = llvmTypeFromWPLType(sdctx->t);
+      for (WPLParser::ScalarContext* sctx : sdctx->scalars)
+      {
+        module->getOrInsertGlobal(sctx->id->getText(), t);
+      }
+    }
+    else
+    {
+      e->accept(this);
+    }
   }
 
   return nullptr;
@@ -65,27 +77,27 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   Function* func;
 
   std::string funcName = ctx->fh->id->getText();
-  if (funcName == "program") //TODO: semantic check that this function exists
+  // if (funcName == "programNAH") //TODO: semantic check that this function exists
+  // {
+  //   FunctionType *mainFuncType = FunctionType::get(Int32Ty, {Int32Ty, Int8PtrPtrTy}, false);
+  //   func = Function::Create(mainFuncType,     GlobalValue::ExternalLinkage,
+  //     "main", module);
+  // }
+  // else
+  // {
+  Type* returntype = llvmTypeFromWPLType(ctx->fh->t);
+  std::vector<Type*> argtypes;
+  if (ctx->fh->p)
   {
-    FunctionType *mainFuncType = FunctionType::get(Int32Ty, {Int32Ty, Int8PtrPtrTy}, false);
-    func = Function::Create(mainFuncType,     GlobalValue::ExternalLinkage,
-      "main", module);
-  }
-  else
-  {
-    Type* returntype = llvmTypeFromWPLType(ctx->fh->t);
-    std::vector<Type*> argtypes;
-    if (ctx->fh->p)
+    for (WPLParser::TypeContext* tctx : ctx->fh->p->types)
     {
-      for (WPLParser::TypeContext* tctx : ctx->fh->p->types)
-      {
-        argtypes.push_back(llvmTypeFromWPLType(tctx));
-      }
+      argtypes.push_back(llvmTypeFromWPLType(tctx));
     }
-
-    FunctionType *funcType = FunctionType::get(returntype, argtypes, false);
-    func = Function::Create(funcType, GlobalValue::ExternalLinkage, funcName, module);
   }
+
+  FunctionType *funcType = FunctionType::get(returntype, argtypes, false);
+  func = Function::Create(funcType, GlobalValue::ExternalLinkage, funcName, module);
+  // }
 
   BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", func);
 
