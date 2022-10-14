@@ -126,19 +126,19 @@ int main(int argc, const char* argv[]) {
     cv->modPrint();
   }
 
-  // // Dump the code to an output file
-  // if (!noCode) {
-  //   std::string irFileName;
-  //   if (outputFileName != "-") {
-  //     irFileName = outputFileName;
-  //   } else {
-  //     irFileName = inputFileName.substr(0,inputFileName.find_last_of('.'))+".ll";
-  //   }
-  //   std::error_code ec;
-  //   llvm::raw_fd_ostream irFileStream(irFileName, ec);
-  //   module->print(irFileStream, nullptr);
-  //   irFileStream.flush();
-  // }
+  // Dump the code to an output file
+  if (!noCode) {
+    std::string irFileName;
+    if (outputFileName != "-") {
+      irFileName = outputFileName;
+    } else {
+      irFileName = inputFileName.substr(0,inputFileName.find_last_of('.'))+".ll";
+    }
+    std::error_code ec;
+    llvm::raw_fd_ostream irFileStream(irFileName, ec);
+    module->print(irFileStream, nullptr);
+    irFileStream.flush();
+  }
 
   return 0;
 }

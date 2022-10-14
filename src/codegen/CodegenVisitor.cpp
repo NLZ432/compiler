@@ -38,8 +38,7 @@ std::any CodegenVisitor::visitCompilationUnit(WPLParser::CompilationUnitContext 
 
   // Generate code for all expressions
   for (auto e : ctx->components) {
-    // Generate code to output this expression
-    Value* exprVal = std::any_cast<Value*>(e->accept(this));
+    e->accept(this);
   }
 
   return nullptr;
@@ -96,7 +95,7 @@ std::any CodegenVisitor::visitFunction(WPLParser::FunctionContext *ctx) {
   if (ctx->fh->p)
   {
     Function::arg_iterator argiterator = func->arg_begin();
-    for (int i = 0; i < ctx->fh->p->ids.size(); i++)
+    for (unsigned long i = 0; i < ctx->fh->p->ids.size(); i++)
     {
       std::string id = ctx->fh->p->ids[i]->getText();
       Symbol* symbol = props->getBinding(ctx->fh->p->ids[i]);
@@ -135,7 +134,29 @@ std::any CodegenVisitor::visitProcedure(WPLParser::ProcedureContext *ctx) {
   Function *proc = Function::Create(procType, GlobalValue::ExternalLinkage, procName, module);
 
   BasicBlock *bBlock = BasicBlock::Create(module->getContext(), "entry", proc);
+
   builder->SetInsertPoint(bBlock);
+
+  // attach arg values to arg symbols
+  if (ctx->ph->p)
+  {
+    Function::arg_iterator argiterator = proc->arg_begin();
+    for (unsigned long i = 0; i < ctx->ph->p->ids.size(); i++)
+    {
+      std::string id = ctx->ph->p->ids[i]->getText();
+      Symbol* symbol = props->getBinding(ctx->ph->p->ids[i]);
+      if (symbol == nullptr)
+      {
+        errors.addCodegenError(ctx->getStart(), "No symbol created for " + id);
+        return v;
+      }
+
+      Type* type = llvmTypeFromSymType(symbol->type);
+      Value* alloc = builder->CreateAlloca(type, 0, symbol->identifier);
+      symbol->val = alloc;
+      builder->CreateStore(argiterator++, symbol->val); 
+    }
+  }
 
   ctx->b->accept(this);
 
@@ -193,7 +214,7 @@ std::any CodegenVisitor::visitScalarDeclaration(WPLParser::ScalarDeclarationCont
 
 std::any CodegenVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
   Value* v = Int32Zero;
-  for (int i = 0; i < ctx->exprs.size(); i++)
+  for (unsigned long i = 0; i < ctx->exprs.size(); i++)
   {
     Symbol* symbol = props->getBinding(ctx->exprs[i]);
     Value* v = std::any_cast<Value *>(ctx->exprs[i]->accept(this));
@@ -282,6 +303,10 @@ std::any CodegenVisitor::visitReturn(WPLParser::ReturnContext *ctx) {
   {
     v = std::any_cast<Value *>(ctx->expr()->accept(this)); 
   }
+  else 
+  {
+    v = nullptr;
+  }
   return builder->CreateRet(v);
 }
 
@@ -311,7 +336,7 @@ std::any CodegenVisitor::visitConstant(WPLParser::ConstantContext *ctx) {
     s.erase(0, 1);
     
     // convert \n to newline characters
-    for (int i = 0; i < s.length(); i++)
+    for (unsigned long i = 0; i < s.length(); i++)
     {
       if (s.length() <= i) break; // this loop is shrinking the string
       if (s[i] == '\\' && s[i+1] == 'n')
@@ -474,7 +499,7 @@ std::any CodegenVisitor::visitSelect(WPLParser::SelectContext *ctx) {
   std::vector<BasicBlock*> yesblocs;
   std::vector<BasicBlock*> condblocs;
 
-  for (int i = 0; i < ctx->selectAlt().size(); i++)
+  for (unsigned long i = 0; i < ctx->selectAlt().size(); i++)
   {
     WPLParser::SelectAltContext* alt = ctx->selectAlt()[i];
     yesblocs.push_back(BasicBlock::Create(module->getContext(), "selectbloc", func));
@@ -489,7 +514,7 @@ std::any CodegenVisitor::visitSelect(WPLParser::SelectContext *ctx) {
   BasicBlock *continueblock = BasicBlock::Create(module->getContext(), "continue", func);
   builder->CreateBr(continueblock); // last false case, go to continue block
 
-  for (int i = 0; i < ctx->selectAlt().size(); i++)
+  for (unsigned long i = 0; i < ctx->selectAlt().size(); i++)
   {
     WPLParser::SelectAltContext* alt = ctx->selectAlt()[i];
     builder->SetInsertPoint(yesblocs[i]);

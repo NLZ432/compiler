@@ -85,6 +85,7 @@ std::any SemanticVisitor::visitProcedure(WPLParser::ProcedureContext *ctx) {
       std::string id = ctx->ph->p->ids[i]->getText();
       SymType t = std::any_cast<SymType>(ctx->ph->p->types[i]->accept(this));
       Symbol* sym = stmgr->addSymbol(id, t);
+      bindings->bind(ctx->ph->p->ids[i], sym);
       sym->defined = true;
     }
   }
@@ -165,7 +166,7 @@ std::any SemanticVisitor::visitExternFuncHeader(WPLParser::ExternFuncHeaderConte
 
 std::any SemanticVisitor::visitSelectAlt(WPLParser::SelectAltContext *ctx) {
   SymType et = std::any_cast<SymType>(ctx->e->accept(this));
-  SymType st = std::any_cast<SymType>(ctx->s->accept(this));
+  ctx->s->accept(this);
   if (et != SymType::BOOL)
   {
     errors.addSemanticError(ctx->getStart(), "expected a boolean expression, got " + ctx->e->getText());
