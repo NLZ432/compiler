@@ -396,12 +396,9 @@ std::any CodegenVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
   Function* func = builder->GetInsertBlock()->getParent(); 
   
   // true block
-  BasicBlock *trueblock = BasicBlock::Create(module->getContext(), "bTrue", func);
+  BasicBlock *trueblock = BasicBlock::Create(module->getContext(), "truebloc", func);
   // false block
-  BasicBlock *falseblock = nullptr; 
-  if (ctx->noblock != nullptr) {
-    falseblock = BasicBlock::Create(module->getContext(), "bFalse", func);
-  }
+  BasicBlock *falseblock = BasicBlock::Create(module->getContext(), "falsebloc", func);
 
   // continue block
   BasicBlock *continueblock = BasicBlock::Create(module->getContext(), "bContinue", func);
@@ -414,11 +411,12 @@ std::any CodegenVisitor::visitConditional(WPLParser::ConditionalContext *ctx) {
   builder->CreateBr(continueblock);   // go to the continuation
 
   // false block code
-  if (falseblock != nullptr) {
-    builder->SetInsertPoint(falseblock);
+  builder->SetInsertPoint(falseblock);
+  if (ctx->noblock)
+  {
     Value *b1result = std::any_cast<Value*>(ctx->noblock->accept(this));
-    builder->CreateBr(continueblock); // go to the continuation
   }
+  builder->CreateBr(continueblock); // go to the continuation
 
   builder->SetInsertPoint(continueblock);
 

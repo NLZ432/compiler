@@ -5,23 +5,16 @@
 extern str func printf(...);
 
 int func program() {
-    int a <- 0;
-    select {
-        false  : { 
-            a <- 1; 
-        }
-        true : { 
-            a <- 2;
-            printf("COND %d\n", (1 + 1 + 1) * 3);
-            if false {
-                printf("SWAG1 %d\n", (1 + 1 + 1) * 3);
-            } else {
-                printf("SWAG2 %d\n", (1 + 1 + 1) * 3);
-            }
-        }
-        true : { a <- 3; }
+    printf("HI\n");
+    if ((1 > 10)) {
+        printf("TRUE\n");
     }
-    printf("%d\n", a);
+    if ((1 < 10)) {
+        printf("AYY\n");
+    }
+    printf("HO\n");
+    
+   
     return 0;
 }
 
