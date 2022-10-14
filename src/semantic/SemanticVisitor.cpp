@@ -240,6 +240,7 @@ std::any SemanticVisitor::visitAssignment(WPLParser::AssignmentContext *ctx) {
     if (symbol != nullptr)
     {
       bindings->bind(ctx->exprs[i], symbol);
+      symbol->defined = true;
     }
     else
     {
